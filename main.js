@@ -52,7 +52,7 @@ function open_doors_chance(str) {
     ], 5, str);
 }
 
-function xp_modifier_from_prime_req(value) {
+function xp_modifier_from_single_prime_req(value) {
     return apply_map([
         { limit: 5, modifier: -20 },
         { limit: 8, modifier: -10 },
@@ -68,7 +68,7 @@ var classes = [
         hit_dice: 6,
         armor_allowed: true,
         shield_allowed: true,
-        xp_mod: (str, dex, con, int, wis, cha) => xp_modifier_from_prime_req(wis)
+        xp_mod: (str, dex, con, int, wis, cha) => xp_modifier_from_single_prime_req(wis)
     },
     {
         name: "Dwarf",
@@ -76,7 +76,7 @@ var classes = [
         hit_dice: 8,
         armor_allowed: true,
         shield_allowed: true,
-        xp_mod: (str, dex, con, int, wis, cha) => xp_modifier_from_prime_req(str)
+        xp_mod: (str, dex, con, int, wis, cha) => xp_modifier_from_single_prime_req(str)
     },
     {
         name: "Elf",
@@ -98,7 +98,7 @@ var classes = [
         hit_dice: 8,
         armor_allowed: true,
         shield_allowed: true,
-        xp_mod: (str, dex, con, int, wis, cha) => xp_modifier_from_prime_req(str)
+        xp_mod: (str, dex, con, int, wis, cha) => xp_modifier_from_single_prime_req(str)
     },
     {
         name: "Halfling",
@@ -122,7 +122,7 @@ var classes = [
         hit_dice: 4,
         armor_allowed: false,
         shield_allowed: false,
-        xp_mod: (str, dex, con, int, wis, cha) => xp_modifier_from_prime_req(int)
+        xp_mod: (str, dex, con, int, wis, cha) => xp_modifier_from_single_prime_req(int)
     },
     {
         name: "Thief",
@@ -131,7 +131,7 @@ var classes = [
         armor_allowed: true,
         leather_armor_only: true,
         shield_allowed: false,
-        xp_mod: (str, dex, con, int, wis, cha) => xp_modifier_from_prime_req(dex)
+        xp_mod: (str, dex, con, int, wis, cha) => xp_modifier_from_single_prime_req(dex)
     }
 ];
 
@@ -295,7 +295,7 @@ const print_ac = () => {
 console.log(chalk.underline("\n\nSummary\n"));
 console.log(chalk.cyan(`Class: ${chosen_class.name}`));
 print_abilities();
-console.log(chalk.bold(`Max HP ${max_hp}`));
+console.log(chalk.bold(`Max HP ${max_hp} (Hit Dice 1d${chosen_class.hit_dice})`));
 console.log(chalk.bold(`Armor: ${chosen_armor.name}${has_shield ? ', Shield' : ''}`));
 print_ac();
 console.log(chalk.bold(`Speed: ${chosen_armor.speed} / ${chosen_armor.speed / 3}`));
