@@ -1,0 +1,17 @@
+{
+  "name": "bxchargen",
+  "version": "1.0.0",
+  "description": "B/X (OSE Classic) character generator",
+  "type": "module",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@inquirer/prompts": "^5.0.5",
+    "chalk": "^5.3.0"
+  }
+}
