@@ -36,10 +36,13 @@ function modifier_as_suffix(ability_modifier) {
     return "";
 }
 
-function print_modifier_msg(ability_modifier, msg) {
+function print_modifier_msg(ability_modifier, msg, extra_msg) {
     if (ability_modifier != 0) {
-        const full_msg = `${ability_modifier > 0 ? '+' : ''}${ability_modifier}${msg}`;
-        console.log(ability_modifier > 0 ? chalk.green(full_msg) : chalk.red(full_msg));
+        var full_msg = `${ability_modifier > 0 ? '+' : ''}${ability_modifier}${msg}`;
+        full_msg = ability_modifier > 0 ? chalk.green(full_msg) : chalk.red(full_msg);
+        if (extra_msg)
+            full_msg += ' ' + extra_msg;
+        console.log(full_msg);
     }
 }
 
@@ -215,7 +218,7 @@ var mod_melee, mod_missile, mod_ac, mod_hp, mod_magicsave, mod_lang, mod_react;
 var mod_missile_extra, mod_xp;
 var chosen_class;
 
-const print_abilities = () => {
+const print_abilities = (in_result) => {
     console.log(`STR ${chalk.bold(str)}${modifier_as_suffix(mod_melee)} ` +
                 `DEX ${chalk.bold(dex)}${modifier_as_suffix(mod_missile)} ` +
                 `CON ${chalk.bold(con)}${modifier_as_suffix(mod_hp)} ` +
@@ -229,7 +232,7 @@ const print_abilities = () => {
         print_modifier_msg(mod_missile_extra, " to missile attack due to class");
     else if (mod_missile && mod_missile_extra)
         print_modifier_msg(mod_missile + mod_missile_extra, " to missile attack due to DEX and class");
-    print_modifier_msg(mod_ac, " to AC due to DEX");
+    print_modifier_msg(mod_ac, " to AC due to DEX", `${in_result ? '(included in AC below)' : ''}`);
     print_modifier_msg(mod_hp, " to hit dice due to CON");
     print_modifier_msg(mod_lang, " additional languages due to INT");
     print_modifier_msg(mod_magicsave, " to magic saves due to WIS");
@@ -237,7 +240,7 @@ const print_abilities = () => {
         print_modifier_msg(mod_xp, "% XP due to prime requisite");
 };
 
-for (; ; ) {
+for ( ; ; ) {
     str = roll(6, 3);
     dex  = roll(6, 3);
     con = roll(6, 3);
@@ -382,9 +385,9 @@ const print_ac = () => {
     }
 };
 
-console.log(chalk.underline("\n\nSummary\n"));
+console.log(chalk.underline("\n\nResult\n"));
 console.log(chalk.cyan(`Level ${level} ${chosen_class.name}`));
-print_abilities();
+print_abilities(true);
 console.log(chalk.bold(`Max HP ${max_hp} (Hit Dice 1d${chosen_class.hit_dice})`));
 console.log(chalk.bold(`Armor: ${chosen_armor.name}${has_shield ? ', Shield' : ''}`));
 print_ac();
