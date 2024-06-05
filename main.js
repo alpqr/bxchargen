@@ -1,5 +1,5 @@
 import chalk from 'chalk'
-import { select, expand } from '@inquirer/prompts';
+import { select, expand, Separator, input } from '@inquirer/prompts';
 
 function roll(sides, count, bonus) {
     var result = 0;
@@ -43,6 +43,12 @@ function print_modifier_msg(ability_modifier, msg) {
     }
 }
 
+function print_cha_msg(cha) {
+    const r = npc_reactions(cha);
+    const reactions_msg = r != 0 ? `NPC reactions ${r > 0 ? `+${r}` : `${r}`}, ` : "";
+    console.log(`${reactions_msg}Max retainers ${max_retainers(cha)}, Retainer loyalty ${retainer_loyalty(cha)}`)
+}
+
 function open_doors_chance(str) {
     return apply_map([
         { limit: 8, modifier: 1 },
@@ -50,6 +56,37 @@ function open_doors_chance(str) {
         { limit: 15, modifier: 3 },
         { limit: 17, modifier: 4 }
     ], 5, str);
+}
+
+function npc_reactions(cha) {
+    return apply_map([
+        { limit: 3, modifier: -2 },
+        { limit: 8, modifier: -1 },
+        { limit: 12, modifier: 0 },
+        { limit: 17, modifier: 1 }
+    ], 2, cha);
+}
+
+function max_retainers(cha) {
+    return apply_map([
+        { limit: 3, modifier: 1 },
+        { limit: 5, modifier: 2 },
+        { limit: 8, modifier: 3 },
+        { limit: 12, modifier: 4 },
+        { limit: 15, modifier: 5 },
+        { limit: 17, modifier: 6 }
+    ], 7, cha);
+}
+
+function retainer_loyalty(cha) {
+    return apply_map([
+        { limit: 3, modifier: 4 },
+        { limit: 5, modifier: 5 },
+        { limit: 8, modifier: 6 },
+        { limit: 12, modifier: 7 },
+        { limit: 15, modifier: 8 },
+        { limit: 17, modifier: 9 }
+    ], 10, cha);
 }
 
 function xp_modifier_from_single_prime_req(value) {
@@ -64,22 +101,35 @@ function xp_modifier_from_single_prime_req(value) {
 var classes = [
     {
         name: "Cleric",
+        description: "Cleric (prime requisite WIS)",
         allowed: () => true,
         hit_dice: 6,
         armor_allowed: true,
         shield_allowed: true,
-        xp_mod: (str, dex, con, int, wis, cha) => xp_modifier_from_single_prime_req(wis)
+        xp_mod: (str, dex, con, int, wis, cha) => xp_modifier_from_single_prime_req(wis),
+        other_info: "Blunt weapons only",
+        languages: "Alignment, Common",
+        spells: [
+            [], [1], [2], [2, 1],
+            [2, 2], [2, 2, 1, 1], [2, 2, 2, 1, 1], [3, 3, 2, 2, 1],
+            [3, 3, 3, 2, 2], [4, 4, 3, 3, 2], [4, 4, 4, 3, 3], [5, 5, 4, 4, 3],
+            [5, 5, 5, 4, 4], [6, 5, 5, 5, 4]
+        ]
     },
     {
         name: "Dwarf",
+        description: "Dwarf (prime requisite STR)",
         allowed: (str, dex, con, int, wis, cha) => con >= 9,
         hit_dice: 8,
         armor_allowed: true,
         shield_allowed: true,
-        xp_mod: (str, dex, con, int, wis, cha) => xp_modifier_from_single_prime_req(str)
+        xp_mod: (str, dex, con, int, wis, cha) => xp_modifier_from_single_prime_req(str),
+        other_info: "Infravision 60 ft, Listening at doors 2-in-6, Detect room traps 2-in-6, Detect construction tricks 2-in-6, Weapons small/normal sized only",
+        languages: "Alignment, Common, Dwarvish, Gnomish, Goblin, Kobold"
     },
     {
         name: "Elf",
+        description: "Elf (prime requisite INT and STR)",
         allowed: (str, dex, con, int, wis, cha) => int >= 9,
         hit_dice: 6,
         armor_allowed: true,
@@ -90,18 +140,28 @@ var classes = [
             if (int >= 13 && str >= 13)
                 return 5;
             return 0;
-        }
+        },
+        other_info: "Infravision 60 ft, Listening at doors 2-in-6, Detect secret doors 2-in-6, Immune to ghoul paralysis",
+        languages: "Alignment, Common, Elvish, Gnoll, Hobgoblin, Orcish",
+        spells: [
+            [1], [2], [2, 1], [2, 2],
+            [2, 2, 1], [2, 2, 2], [3, 2, 2, 1], [3, 3, 2, 2],
+            [3, 3, 3, 2, 1], [3, 3, 3, 3, 2]
+        ]
     },
     {
         name: "Fighter",
+        description: "Fighter (prime requisite STR)",
         allowed: () => true,
         hit_dice: 8,
         armor_allowed: true,
         shield_allowed: true,
-        xp_mod: (str, dex, con, int, wis, cha) => xp_modifier_from_single_prime_req(str)
+        xp_mod: (str, dex, con, int, wis, cha) => xp_modifier_from_single_prime_req(str),
+        languages: "Alignment, Common"
     },
     {
         name: "Halfling",
+        description: "Halfling (prime requisite DEX and STR)",
         allowed: (str, dex, con, int, wis, cha) => con >= 9 && dex >= 9,
         hit_dice: 6,
         armor_allowed: true,
@@ -114,29 +174,44 @@ var classes = [
             if (dex >= 13 || str >= 13)
                 return 5;
             return 0;
-        }
+        },
+        other_info: "Listening at doors 2-in-6, Hiding 90% in woods / 2-in-6 in dungeons, Weapons and armor appropriate to size",
+        languages: "Alignment, Common, Halfling"
     },
     {
         name: "Magic-user",
+        description: "Magic-user (prime requisite INT)",
         allowed: () => true,
         hit_dice: 4,
         armor_allowed: false,
         shield_allowed: false,
-        xp_mod: (str, dex, con, int, wis, cha) => xp_modifier_from_single_prime_req(int)
+        xp_mod: (str, dex, con, int, wis, cha) => xp_modifier_from_single_prime_req(int),
+        other_info: "Dagger only",
+        languages: "Alignment, Common",
+        spells: [
+            [1], [2], [2, 1], [2, 2],
+            [2, 2, 1], [2, 2, 2], [3, 2, 2, 1], [3, 3, 2, 2],
+            [3, 3, 3, 2, 1], [3, 3, 3, 3, 2], [4, 3, 3, 3, 2, 1], [4, 4, 3, 3, 3, 2],
+            [4, 4, 4, 3, 3, 3], [4, 4, 4, 4, 3, 3]
+        ]
     },
     {
         name: "Thief",
+        description: "Thief (prime requisite DEX)",
         allowed: () => true,
         hit_dice: 4,
         armor_allowed: true,
         leather_armor_only: true,
         shield_allowed: false,
-        xp_mod: (str, dex, con, int, wis, cha) => xp_modifier_from_single_prime_req(dex)
+        xp_mod: (str, dex, con, int, wis, cha) => xp_modifier_from_single_prime_req(dex),
+        other_info: "Back-stab",
+        languages: "Alignment, Common"
     }
 ];
 
+var level = 1;
 var str, dex, con, int, wis, cha;
-var mod_melee, mod_missile, mod_ac, mod_hp, mod_magicsave;
+var mod_melee, mod_missile, mod_ac, mod_hp, mod_magicsave, mod_lang, mod_react;
 var mod_missile_extra, mod_xp;
 var chosen_class;
 
@@ -144,9 +219,9 @@ const print_abilities = () => {
     console.log(`STR ${chalk.bold(str)}${modifier_as_suffix(mod_melee)} ` +
                 `DEX ${chalk.bold(dex)}${modifier_as_suffix(mod_missile)} ` +
                 `CON ${chalk.bold(con)}${modifier_as_suffix(mod_hp)} ` +
-                `INT ${chalk.bold(int)} ` +
+                `INT ${chalk.bold(int)}${modifier_as_suffix(mod_lang)} ` +
                 `WIS ${chalk.bold(wis)}${modifier_as_suffix(mod_magicsave)} ` +
-                `CHA ${chalk.bold(cha)}`)
+                `CHA ${chalk.bold(cha)}${modifier_as_suffix(mod_react)}`)
     print_modifier_msg(mod_melee, " to melee attack and damage due to STR")
     if (mod_missile && !mod_missile_extra)
         print_modifier_msg(mod_missile, " to missile attack due to DEX")
@@ -156,10 +231,10 @@ const print_abilities = () => {
         print_modifier_msg(mod_missile + mod_missile_extra, " to missile attack due to DEX and class");
     print_modifier_msg(mod_ac, " to AC due to DEX");
     print_modifier_msg(mod_hp, " to hit dice due to CON");
+    print_modifier_msg(mod_lang, " additional languages due to INT");
     print_modifier_msg(mod_magicsave, " to magic saves due to WIS");
-    console.log(`Open doors ${open_doors_chance(str)}-in-6`);
     if (mod_xp)
-        print_modifier_msg(mod_xp, "% XP due to prime requisite for class");
+        print_modifier_msg(mod_xp, "% XP due to prime requisite");
 };
 
 for (; ; ) {
@@ -175,17 +250,21 @@ for (; ; ) {
     mod_ac = modifier(dex);
     mod_hp = modifier(con);
     mod_magicsave = modifier(wis);
+    mod_lang = Math.max(0, modifier(int));
+    mod_react = npc_reactions(cha);
 
     print_abilities();
 
     var class_choices = [];
     for (var i in classes) {
         if (classes[i].allowed(str, dex, con, int, wis, cha))
-            class_choices.push({ name: classes[i].name, value: i });
+            class_choices.push({ name: classes[i].name, value: i, description: classes[i].description });
         else
             console.log(chalk.dim(`Skipping ${classes[i].name} due to not meeting requirements`));
     }
+    class_choices.push(new Separator());
     class_choices.push({ name: "Re-roll", value: -1 });
+    class_choices.push({ name: "Quit", value: -2 });
 
     const class_answer = await select({
         message: "Select class",
@@ -196,8 +275,10 @@ for (; ; ) {
     if (class_answer >= 0) {
         chosen_class = classes[class_answer];
         break;
-    } else {
+    } else if (class_answer >= -1) {
         console.log("");
+    } else {
+        process.exit(0);
     }
 }
 
@@ -208,12 +289,21 @@ if (chosen_class.missile_bonus) {
 
 mod_xp = chosen_class.xp_mod(str, dex, con, int, wis, cha);
 if (mod_xp)
-    print_modifier_msg(mod_xp, "% XP due to prime requisite for class");
+    print_modifier_msg(mod_xp, "% XP due to prime requisite");
 
-var max_hp = 0;
+const level_answer = await input({
+    message: "Level (1-8)",
+    default: "1",
+    validate: (value) => { const n = Number(value); return !isNaN(n) && n >= 1 && n <= 8; }
+});
+level = Math.ceil(Number(level_answer));
+
+var max_hp;
 for ( ; ; ) {
-    max_hp = Math.max(1, roll(chosen_class.hit_dice, 1, mod_hp));
-    console.log(chalk.bold(`Max HP ${max_hp}`));
+    max_hp = 0;
+    for (var level_hd = 0; level_hd < level; ++level_hd)
+        max_hp += Math.max(1, roll(chosen_class.hit_dice, 1, mod_hp));
+    console.log(chalk.bold(`Max HP ${max_hp} (Hit Dice 1d${chosen_class.hit_dice})`));
     const hp_ok = await expand({
         message: "Accept HP?",
         default: 'y',
@@ -293,9 +383,27 @@ const print_ac = () => {
 };
 
 console.log(chalk.underline("\n\nSummary\n"));
-console.log(chalk.cyan(`Class: ${chosen_class.name}`));
+console.log(chalk.cyan(`Level ${level} ${chosen_class.name}`));
 print_abilities();
 console.log(chalk.bold(`Max HP ${max_hp} (Hit Dice 1d${chosen_class.hit_dice})`));
 console.log(chalk.bold(`Armor: ${chosen_armor.name}${has_shield ? ', Shield' : ''}`));
 print_ac();
 console.log(chalk.bold(`Speed: ${chosen_armor.speed} / ${chosen_armor.speed / 3}`));
+console.log(`Open doors ${open_doors_chance(str)}-in-6${chosen_class.other_info ? `, ${chosen_class.other_info}` : ''}`);
+print_cha_msg(cha);
+console.log(`Languages: ${chosen_class.languages}`);
+if (chosen_class.spells) {
+    var spells_msg = "";
+    const spell_counts = chosen_class.spells[level - 1];
+    const len = spell_counts.length;
+    if (len == 0) {
+        spells_msg += "None";
+    } else {
+        for (var i = 0; i < len; ++i) {
+            const spell_level = i + 1;
+            const count = spell_counts[i];
+            spells_msg += `${i > 0 ? ', ' : ''}${count}lv${spell_level}`;
+        }
+    }
+    console.log(chalk.bold(`Spells: ${spells_msg}`));
+}
