@@ -117,7 +117,11 @@ var classes = [
             [2, 2], [2, 2, 1, 1], [2, 2, 2, 1, 1], [3, 3, 2, 2, 1],
             [3, 3, 3, 2, 2], [4, 4, 3, 3, 2], [4, 4, 4, 3, 3], [5, 5, 4, 4, 3],
             [5, 5, 5, 4, 4], [6, 5, 5, 5, 4]
-        ]
+        ],
+        max_level: 14,
+        post_level_9_hd: [1, 2, 3, 4, 5],
+        thac0: [ { level: 4, value: 19 }, { level: 8, value: 17 }, { level: 12, value: 14 }, { level: 14, value: 12 } ],
+        base_xp: [ 0, 1500, 3000, 6000, 12_000, 25_000, 50_000, 100_000, 200_000, 300_000, 400_000, 500_000, 600_000, 700_000 ]
     },
     {
         name: "Dwarf",
@@ -128,7 +132,11 @@ var classes = [
         shield_allowed: true,
         xp_mod: (str, dex, con, int, wis, cha) => xp_modifier_from_single_prime_req(str),
         other_info: "Infravision 60 ft, Listening at doors 2-in-6, Detect room traps 2-in-6, Detect construction tricks 2-in-6, Weapons small/normal sized only",
-        languages: "Alignment, Common, Dwarvish, Gnomish, Goblin, Kobold"
+        languages: "Alignment, Common, Dwarvish, Gnomish, Goblin, Kobold",
+        max_level: 12,
+        post_level_9_hd: [3, 6, 9],
+        thac0: [ { level: 3, value: 19 }, { level: 6, value: 17 }, { level: 9, value: 14 }, { level: 12, value: 12 } ],
+        base_xp: [ 0, 2200, 4400, 8800, 17_000, 35_000, 70_000, 140_000, 270_000, 400_000, 530_000, 660_000 ]
     },
     {
         name: "Elf",
@@ -150,7 +158,11 @@ var classes = [
             [1], [2], [2, 1], [2, 2],
             [2, 2, 1], [2, 2, 2], [3, 2, 2, 1], [3, 3, 2, 2],
             [3, 3, 3, 2, 1], [3, 3, 3, 3, 2]
-        ]
+        ],
+        max_level: 10,
+        post_level_9_hd: [2],
+        thac0: [ { level: 3, value: 19 }, { level: 6, value: 17 }, { level: 9, value: 14 }, { level: 10, value: 12 } ],
+        base_xp: [ 0, 4000, 8000, 16_000, 32_000, 64_000, 120_000, 250_000, 400_000, 600_000 ]
     },
     {
         name: "Fighter",
@@ -160,7 +172,11 @@ var classes = [
         armor_allowed: true,
         shield_allowed: true,
         xp_mod: (str, dex, con, int, wis, cha) => xp_modifier_from_single_prime_req(str),
-        languages: "Alignment, Common"
+        languages: "Alignment, Common",
+        max_level: 14,
+        post_level_9_hd: [2, 4, 6, 8, 10],
+        thac0: [ { level: 3, value: 19 }, { level: 6, value: 17 }, { level: 9, value: 14 }, { level: 12, value: 12 }, { level: 14, value: 10 } ],
+        base_xp: [ 0, 2000, 4000, 8000, 16_000, 32_000, 64_000, 120_000, 240_000, 360_000, 480_000, 600_000, 720_000, 840_000 ]
     },
     {
         name: "Halfling",
@@ -179,7 +195,10 @@ var classes = [
             return 0;
         },
         other_info: "Listening at doors 2-in-6, Hiding 90% in woods / 2-in-6 in dungeons, Weapons and armor appropriate to size",
-        languages: "Alignment, Common, Halfling"
+        languages: "Alignment, Common, Halfling",
+        max_level: 8,
+        thac0: [ { level: 3, value: 19 }, { level: 6, value: 17 }, { level: 8, value: 14 } ],
+        base_xp: [ 0, 2000, 4000, 8000, 16_000, 32_000, 64_000, 120_000 ]
     },
     {
         name: "Magic-user",
@@ -196,7 +215,11 @@ var classes = [
             [2, 2, 1], [2, 2, 2], [3, 2, 2, 1], [3, 3, 2, 2],
             [3, 3, 3, 2, 1], [3, 3, 3, 3, 2], [4, 3, 3, 3, 2, 1], [4, 4, 3, 3, 3, 2],
             [4, 4, 4, 3, 3, 3], [4, 4, 4, 4, 3, 3]
-        ]
+        ],
+        max_level: 14,
+        post_level_9_hd: [1, 2, 3, 4, 5],
+        thac0: [ { level: 5, value: 19 }, { level: 10, value: 17 }, { level: 14, value: 14 } ],
+        base_xp: [ 0, 2500, 5000, 10_000, 20_000, 40_000, 80_000, 150_000, 300_000, 450_000, 600_000, 750_000, 900_000, 1_050_000 ]
     },
     {
         name: "Thief",
@@ -208,7 +231,11 @@ var classes = [
         shield_allowed: false,
         xp_mod: (str, dex, con, int, wis, cha) => xp_modifier_from_single_prime_req(dex),
         other_info: "Back-stab",
-        languages: "Alignment, Common"
+        languages: "Alignment, Common",
+        max_level: 14,
+        post_level_9_hd: [2, 4, 6, 8, 10],
+        thac0: [ { level: 4, value: 19 }, { level: 8, value: 17 }, { level: 12, value: 14 }, { level: 14, value: 12 } ],
+        base_xp: [ 0, 1200, 2400, 4800, 9600, 20_000, 40_000, 80_000, 160_000, 280_000, 400_000, 520_000, 640_000, 760_000 ]
     }
 ];
 
@@ -295,17 +322,23 @@ if (mod_xp)
     print_modifier_msg(mod_xp, "% XP due to prime requisite");
 
 const level_answer = await input({
-    message: "Level (1-8)",
+    message: `Level (1-${chosen_class.max_level})`,
     default: "1",
-    validate: (value) => { const n = Number(value); return !isNaN(n) && n >= 1 && n <= 8; }
+    validate: (value) => { const n = Number(value); return !isNaN(n) && n >= 1 && n <= chosen_class.max_level; }
 });
-level = Math.ceil(Number(level_answer));
+level = Math.floor(Number(level_answer));
 
 var max_hp;
 for ( ; ; ) {
     max_hp = 0;
-    for (var level_hd = 0; level_hd < level; ++level_hd)
-        max_hp += Math.max(1, roll(chosen_class.hit_dice, 1, mod_hp));
+    for (var level_hd = 0; level_hd < level; ++level_hd) {
+        if (level_hd <= 8) {
+            max_hp += Math.max(1, roll(chosen_class.hit_dice, 1, mod_hp));
+        } else {
+            // CON no longer applies from level 10
+            max_hp += chosen_class.post_level_9_hd[level_hd - 9];
+        }
+    }
     console.log(chalk.bold(`Max HP ${max_hp} (Hit Dice 1d${chosen_class.hit_dice})`));
     const hp_ok = await expand({
         message: "Accept HP?",
@@ -391,10 +424,15 @@ print_abilities(true);
 console.log(chalk.bold(`Max HP ${max_hp} (Hit Dice 1d${chosen_class.hit_dice})`));
 console.log(chalk.bold(`Armor: ${chosen_armor.name}${has_shield ? ', Shield' : ''}`));
 print_ac();
+var thac0 = 19;
+for (var i in chosen_class.thac0) {
+    if (level <= chosen_class.thac0[i].level) {
+        thac0 = chosen_class.thac0[i].value;
+        break;
+    }
+}
+console.log(chalk.bold(`THAC0 ${thac0}`));
 console.log(chalk.bold(`Speed: ${chosen_armor.speed} / ${chosen_armor.speed / 3}`));
-console.log(`Open doors ${open_doors_chance(str)}-in-6${chosen_class.other_info ? `, ${chosen_class.other_info}` : ''}`);
-print_cha_msg(cha);
-console.log(`Languages: ${chosen_class.languages}`);
 if (chosen_class.spells) {
     var spells_msg = "";
     const spell_counts = chosen_class.spells[level - 1];
@@ -410,3 +448,8 @@ if (chosen_class.spells) {
     }
     console.log(chalk.bold(`Spells: ${spells_msg}`));
 }
+if (chosen_class.base_xp[level - 1] > 0)
+    console.log(`Base XP for level ${level}: ${chosen_class.base_xp[level - 1]}`);
+console.log(`Open doors ${open_doors_chance(str)}-in-6${chosen_class.other_info ? `, ${chosen_class.other_info}` : ''}`);
+print_cha_msg(cha);
+console.log(`Languages: ${chosen_class.languages}`);
