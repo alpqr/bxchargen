@@ -48,8 +48,14 @@ function print_modifier_msg(ability_modifier, msg, extra_msg) {
 
 function print_cha_msg(cha) {
     const r = npc_reactions(cha);
-    const reactions_msg = r != 0 ? `NPC reactions ${r > 0 ? `+${r}` : `${r}`}, ` : "";
-    console.log(`${reactions_msg}Max retainers ${max_retainers(cha)}, Retainer loyalty ${retainer_loyalty(cha)}`)
+    var reactions_msg = "";
+    var color_func = null;
+    if (r != 0) {
+        reactions_msg = `${r > 0 ? `+${r}` : `${r}`} to NPC reactions, `;
+        color_func = r > 0 ? chalk.green : chalk.red;
+    }
+    const msg = `${reactions_msg}Max retainers ${max_retainers(cha)}, Retainer loyalty ${retainer_loyalty(cha)}`;
+    console.log(color_func ? color_func(msg) : msg);
 }
 
 function open_doors_chance(str) {
@@ -421,6 +427,7 @@ const print_ac = () => {
 console.log(chalk.underline("\n\nResult\n"));
 console.log(chalk.cyan(`Level ${level} ${chosen_class.name}`));
 print_abilities(true);
+print_cha_msg(cha);
 console.log(chalk.bold(`Max HP ${max_hp} (Hit Dice 1d${chosen_class.hit_dice})`));
 console.log(chalk.bold(`Armor: ${chosen_armor.name}${has_shield ? ', Shield' : ''}`));
 print_ac();
@@ -451,5 +458,4 @@ if (chosen_class.spells) {
 if (chosen_class.base_xp[level - 1] > 0)
     console.log(`Base XP for level ${level}: ${chosen_class.base_xp[level - 1]}`);
 console.log(`Open doors ${open_doors_chance(str)}-in-6${chosen_class.other_info ? `, ${chosen_class.other_info}` : ''}`);
-print_cha_msg(cha);
 console.log(`Languages: ${chosen_class.languages}`);
