@@ -1,113 +1,7 @@
 import chalk from 'chalk'
 import { select, expand, Separator, input } from '@inquirer/prompts';
 
-function roll(sides, count, bonus) {
-    var result = 0;
-    for (var i = 0; i < (count ?? 1); ++i)
-        result += Math.floor(Math.random() * sides) + 1;
-    if (bonus)
-        result += bonus;
-    return result;
-}
-
-function apply_map(map, max_value, value) {
-    for (var i in map) {
-        if (value <= map[i].limit)
-            return map[i].modifier;
-    }
-    return max_value;
-}
-
-function modifier(ability) {
-    return apply_map([
-        { limit: 3, modifier: -3 },
-        { limit: 5, modifier: -2 },
-        { limit: 8, modifier: -1 },
-        { limit: 12, modifier: 0 },
-        { limit: 15, modifier: 1 },
-        { limit: 17, modifier: 2 }
-    ], 3, ability);
-}
-
-function modifier_as_suffix(ability_modifier) {
-    if (ability_modifier != 0) {
-        return chalk.magenta(` (${ability_modifier > 0 ? '+' : ''}${ability_modifier})`);
-    }
-    return "";
-}
-
-function print_modifier_msg(ability_modifier, msg, extra_msg) {
-    if (ability_modifier != 0) {
-        var full_msg = `${ability_modifier > 0 ? '+' : ''}${ability_modifier}${msg}`;
-        full_msg = ability_modifier > 0 ? chalk.green(full_msg) : chalk.red(full_msg);
-        if (extra_msg)
-            full_msg += ' ' + extra_msg;
-        console.log(full_msg);
-    }
-}
-
-function print_cha_msg(cha) {
-    const r = npc_reactions(cha);
-    var reactions_msg = "";
-    var color_func = null;
-    if (r != 0) {
-        reactions_msg = `${r > 0 ? `+${r}` : `${r}`} to NPC reactions, `;
-        color_func = r > 0 ? chalk.green : chalk.red;
-    }
-    const msg = `${reactions_msg}Max retainers ${max_retainers(cha)}, Retainer loyalty ${retainer_loyalty(cha)}`;
-    console.log(color_func ? color_func(msg) : msg);
-}
-
-function open_doors_chance(str) {
-    return apply_map([
-        { limit: 8, modifier: 1 },
-        { limit: 12, modifier: 2 },
-        { limit: 15, modifier: 3 },
-        { limit: 17, modifier: 4 }
-    ], 5, str);
-}
-
-function npc_reactions(cha) {
-    return apply_map([
-        { limit: 3, modifier: -2 },
-        { limit: 8, modifier: -1 },
-        { limit: 12, modifier: 0 },
-        { limit: 17, modifier: 1 }
-    ], 2, cha);
-}
-
-function max_retainers(cha) {
-    return apply_map([
-        { limit: 3, modifier: 1 },
-        { limit: 5, modifier: 2 },
-        { limit: 8, modifier: 3 },
-        { limit: 12, modifier: 4 },
-        { limit: 15, modifier: 5 },
-        { limit: 17, modifier: 6 }
-    ], 7, cha);
-}
-
-function retainer_loyalty(cha) {
-    return apply_map([
-        { limit: 3, modifier: 4 },
-        { limit: 5, modifier: 5 },
-        { limit: 8, modifier: 6 },
-        { limit: 12, modifier: 7 },
-        { limit: 15, modifier: 8 },
-        { limit: 17, modifier: 9 }
-    ], 10, cha);
-}
-
-function xp_modifier_from_single_prime_req(value) {
-    return apply_map([
-        { limit: 5, modifier: -20 },
-        { limit: 8, modifier: -10 },
-        { limit: 12, modifier: 0 },
-        { limit: 15, modifier: 5 }
-    ], 10, value);
-}
-
-var classes = [
+const classes = [
     {
         name: "Cleric",
         description: "Cleric (prime requisite WIS)",
@@ -244,6 +138,112 @@ var classes = [
         base_xp: [ 0, 1200, 2400, 4800, 9600, 20_000, 40_000, 80_000, 160_000, 280_000, 400_000, 520_000, 640_000, 760_000 ]
     }
 ];
+
+function roll(sides, count, bonus) {
+    var result = 0;
+    for (var i = 0; i < (count ?? 1); ++i)
+        result += Math.floor(Math.random() * sides) + 1;
+    if (bonus)
+        result += bonus;
+    return result;
+}
+
+function apply_map(map, max_value, value) {
+    for (var i in map) {
+        if (value <= map[i].limit)
+            return map[i].modifier;
+    }
+    return max_value;
+}
+
+function modifier(ability) {
+    return apply_map([
+        { limit: 3, modifier: -3 },
+        { limit: 5, modifier: -2 },
+        { limit: 8, modifier: -1 },
+        { limit: 12, modifier: 0 },
+        { limit: 15, modifier: 1 },
+        { limit: 17, modifier: 2 }
+    ], 3, ability);
+}
+
+function modifier_as_suffix(ability_modifier) {
+    if (ability_modifier != 0) {
+        return chalk.magenta(` (${ability_modifier > 0 ? '+' : ''}${ability_modifier})`);
+    }
+    return "";
+}
+
+function print_modifier_msg(ability_modifier, msg, extra_msg) {
+    if (ability_modifier != 0) {
+        var full_msg = `${ability_modifier > 0 ? '+' : ''}${ability_modifier}${msg}`;
+        full_msg = ability_modifier > 0 ? chalk.green(full_msg) : chalk.red(full_msg);
+        if (extra_msg)
+            full_msg += ' ' + extra_msg;
+        console.log(full_msg);
+    }
+}
+
+function print_cha_msg(cha) {
+    const r = npc_reactions(cha);
+    var reactions_msg = "";
+    var color_func = null;
+    if (r != 0) {
+        reactions_msg = `${r > 0 ? `+${r}` : `${r}`} to NPC reactions, `;
+        color_func = r > 0 ? chalk.green : chalk.red;
+    }
+    const msg = `${reactions_msg}Max retainers ${max_retainers(cha)}, Retainer loyalty ${retainer_loyalty(cha)}`;
+    console.log(color_func ? color_func(msg) : msg);
+}
+
+function open_doors_chance(str) {
+    return apply_map([
+        { limit: 8, modifier: 1 },
+        { limit: 12, modifier: 2 },
+        { limit: 15, modifier: 3 },
+        { limit: 17, modifier: 4 }
+    ], 5, str);
+}
+
+function npc_reactions(cha) {
+    return apply_map([
+        { limit: 3, modifier: -2 },
+        { limit: 8, modifier: -1 },
+        { limit: 12, modifier: 0 },
+        { limit: 17, modifier: 1 }
+    ], 2, cha);
+}
+
+function max_retainers(cha) {
+    return apply_map([
+        { limit: 3, modifier: 1 },
+        { limit: 5, modifier: 2 },
+        { limit: 8, modifier: 3 },
+        { limit: 12, modifier: 4 },
+        { limit: 15, modifier: 5 },
+        { limit: 17, modifier: 6 }
+    ], 7, cha);
+}
+
+function retainer_loyalty(cha) {
+    return apply_map([
+        { limit: 3, modifier: 4 },
+        { limit: 5, modifier: 5 },
+        { limit: 8, modifier: 6 },
+        { limit: 12, modifier: 7 },
+        { limit: 15, modifier: 8 },
+        { limit: 17, modifier: 9 }
+    ], 10, cha);
+}
+
+function xp_modifier_from_single_prime_req(value) {
+    return apply_map([
+        { limit: 5, modifier: -20 },
+        { limit: 8, modifier: -10 },
+        { limit: 12, modifier: 0 },
+        { limit: 15, modifier: 5 }
+    ], 10, value);
+}
 
 var level = 1;
 var str, dex, con, int, wis, cha;
