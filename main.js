@@ -473,9 +473,13 @@ const print_ac = () => {
 var additional_languages = [];
 if (mod_lang > 0) {
     const lang_msg = `Choose ${mod_lang} additional language${mod_lang > 1 ? 's' : ''}`;
+    const already_known = new Set(chosen_class.languages.split(', '));
+    var language_select_choices = [];
+    language_choices.forEach((choice) => language_select_choices.push(
+        { value: choice.value, disabled: already_known.has(choice.value) }));
     additional_languages = await checkbox({
         message: lang_msg,
-        choices: language_choices,
+        choices: language_select_choices,
         pageSize: 12,
         loop: false,
         validate: (choices) => {
