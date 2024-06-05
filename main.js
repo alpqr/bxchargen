@@ -1,5 +1,5 @@
 import chalk from 'chalk'
-import { select, expand, Separator, input } from '@inquirer/prompts';
+import { select, expand, Separator, input, checkbox } from '@inquirer/prompts';
 
 const classes = [
     {
@@ -152,6 +152,29 @@ const classes = [
         saves: [ { level: 4, values: [ 13, 14, 13, 16, 15 ] }, { level: 8, values: [ 12, 13, 11, 14, 13 ] },
                  { level: 12, values: [ 10, 11, 9, 12, 10 ] }, { level: 14, values: [ 8, 9, 7, 10, 8 ] } ]
     }
+];
+
+const language_choices = [
+    { value: 'Bugbear' },
+    { value: 'Doppelganger' },
+    { value: 'Dragon' },
+    { value: 'Dwarvish' },
+    { value: 'Elvish' },
+    { value: 'Gargoyle' },
+    { value: 'Gnoll' },
+    { value: 'Gnomish' },
+    { value: 'Goblin' },
+    { value: 'Halfling' },
+    { value: 'Harpy' },
+    { value: 'Hobgoblin' },
+    { value: 'Kobold' },
+    { value: 'Lizard man' },
+    { value: 'Medusa' },
+    { value: 'Minotaur' },
+    { value: 'Ogre' },
+    { value: 'Orcish' },
+    { value: 'Pixie' },
+    { value: 'Human dialect' }
 ];
 
 function roll(sides, count, bonus) {
@@ -447,12 +470,35 @@ const print_ac = () => {
     }
 };
 
+var additional_languages = [];
+if (mod_lang > 0) {
+    const lang_msg = `Choose ${mod_lang} additional language${mod_lang > 1 ? 's' : ''}`;
+    additional_languages = await checkbox({
+        message: lang_msg,
+        choices: language_choices,
+        pageSize: 12,
+        loop: false,
+        validate: (choices) => {
+            if (choices.length === mod_lang)
+                return true;
+            return lang_msg;
+        }
+    });
+}
+
+const alignment = await select({
+    message: "Select alignment",
+    choices: [
+        { value: "Lawful" }, { value: "Neutral" }, { value: "Chaotic" }
+    ]
+});
+
 console.log(chalk.underline("\n\nResult\n"));
 console.log(chalk.cyan(`Level ${level} ${chosen_class.name}`));
 print_abilities(true);
 print_cha_msg(cha);
 console.log(chalk.bold(`Max HP ${max_hp} (Hit Dice 1d${chosen_class.hit_dice})`));
-console.log(chalk.bold(`Armor: ${chosen_armor.name}${has_shield ? ', Shield' : ''}`));
+console.log(chalk.bold(`Armor ${chosen_armor.name}${has_shield ? ', Shield' : ''}`));
 print_ac();
 var thac0 = 19;
 for (var i in chosen_class.thac0) {
@@ -476,7 +522,7 @@ if (chosen_class.spells) {
             spells_msg += `${i > 0 ? ', ' : ''}${count}lv${spell_level}`;
         }
     }
-    console.log(chalk.bold(`Spells: ${spells_msg}`));
+    console.log(chalk.bold(`Spells ${spells_msg}`));
 }
 const saves = saving_throws_for_level(chosen_class.saves, level);
 console.log(`${chalk.bold('Saving throws')} D ${chalk.bold(saves[0])} W ${chalk.bold(saves[1])} P ${chalk.bold(saves[2])} ` +
@@ -484,4 +530,7 @@ console.log(`${chalk.bold('Saving throws')} D ${chalk.bold(saves[0])} W ${chalk.
 if (chosen_class.base_xp[level - 1] > 0)
     console.log(`Base XP for level ${level}: ${chosen_class.base_xp[level - 1]}`);
 console.log(`Open doors ${open_doors_chance(str)}-in-6${chosen_class.other_info ? `, ${chosen_class.other_info}` : ''}`);
-console.log(`Languages: ${chosen_class.languages}`);
+console.log(`Alignment ${alignment}`);
+var languages = new Set(chosen_class.languages.split(', '));
+additional_languages.forEach((lang) => languages.add(lang));
+console.log(`Languages ${[...languages.values()].join(', ')}`);
