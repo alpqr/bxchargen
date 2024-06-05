@@ -414,7 +414,7 @@ const print_ac = () => {
     if (chosen_class.ac_bonus_against_large) {
         const large_ac_wo_shield = ac_wo_shield - chosen_class.ac_bonus_against_large;
         const large_ac = large_ac_wo_shield - (has_shield ? 1 : 0);
-        console.log(chalk.bold(`AC against large opponents ${large_ac}${large_ac_wo_shield != large_ac ? ` (${large_ac_wo_shield} when no shield)` : ''}`));
+        console.log(chalk.bold(`AC ${large_ac} against large opponents${large_ac_wo_shield != large_ac ? ` (${large_ac_wo_shield} when no shield)` : ''}`));
     }
 };
 
@@ -432,7 +432,7 @@ for (var i in chosen_class.thac0) {
     }
 }
 console.log(chalk.bold(`THAC0 ${thac0}`));
-console.log(chalk.bold(`Speed: ${chosen_armor.speed} / ${chosen_armor.speed / 3}`));
+console.log(chalk.bold(`Speed ${chosen_armor.speed} / ${chosen_armor.speed / 3}`));
 if (chosen_class.spells) {
     var spells_msg = "";
     const spell_counts = chosen_class.spells[level - 1];
