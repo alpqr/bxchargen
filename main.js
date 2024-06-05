@@ -21,7 +21,9 @@ const classes = [
         max_level: 14,
         post_level_9_hd: [1, 2, 3, 4, 5],
         thac0: [ { level: 4, value: 19 }, { level: 8, value: 17 }, { level: 12, value: 14 }, { level: 14, value: 12 } ],
-        base_xp: [ 0, 1500, 3000, 6000, 12_000, 25_000, 50_000, 100_000, 200_000, 300_000, 400_000, 500_000, 600_000, 700_000 ]
+        base_xp: [ 0, 1500, 3000, 6000, 12_000, 25_000, 50_000, 100_000, 200_000, 300_000, 400_000, 500_000, 600_000, 700_000 ],
+        saves: [ { level: 4, values: [ 11, 12, 14, 16, 15 ] }, { level: 8, values: [ 9, 10, 12, 14, 12 ] },
+                 { level: 12, values: [ 6, 7, 9, 11, 9 ] }, { level: 14, values: [ 3, 5, 7, 8, 7 ] } ]
     },
     {
         name: "Dwarf",
@@ -36,7 +38,9 @@ const classes = [
         max_level: 12,
         post_level_9_hd: [3, 6, 9],
         thac0: [ { level: 3, value: 19 }, { level: 6, value: 17 }, { level: 9, value: 14 }, { level: 12, value: 12 } ],
-        base_xp: [ 0, 2200, 4400, 8800, 17_000, 35_000, 70_000, 140_000, 270_000, 400_000, 530_000, 660_000 ]
+        base_xp: [ 0, 2200, 4400, 8800, 17_000, 35_000, 70_000, 140_000, 270_000, 400_000, 530_000, 660_000 ],
+        saves: [ { level: 3, values: [ 8, 9, 10, 13, 12 ] }, { level: 6, values: [ 6, 7, 8, 10, 10 ] },
+                 { level: 9, values: [ 4, 5, 6, 7, 8 ] }, { level: 12, values: [ 2, 3, 4, 4, 6 ] } ]
     },
     {
         name: "Elf",
@@ -62,7 +66,9 @@ const classes = [
         max_level: 10,
         post_level_9_hd: [2],
         thac0: [ { level: 3, value: 19 }, { level: 6, value: 17 }, { level: 9, value: 14 }, { level: 10, value: 12 } ],
-        base_xp: [ 0, 4000, 8000, 16_000, 32_000, 64_000, 120_000, 250_000, 400_000, 600_000 ]
+        base_xp: [ 0, 4000, 8000, 16_000, 32_000, 64_000, 120_000, 250_000, 400_000, 600_000 ],
+        saves: [ { level: 3, values: [ 12, 13, 13, 15, 15 ] }, { level: 6, values: [ 10, 11, 11, 13, 12 ] },
+                 { level: 9, values: [ 8, 9, 9, 10, 10 ] }, { level: 10, values: [ 6, 7, 8, 8, 8 ] } ]
     },
     {
         name: "Fighter",
@@ -76,7 +82,10 @@ const classes = [
         max_level: 14,
         post_level_9_hd: [2, 4, 6, 8, 10],
         thac0: [ { level: 3, value: 19 }, { level: 6, value: 17 }, { level: 9, value: 14 }, { level: 12, value: 12 }, { level: 14, value: 10 } ],
-        base_xp: [ 0, 2000, 4000, 8000, 16_000, 32_000, 64_000, 120_000, 240_000, 360_000, 480_000, 600_000, 720_000, 840_000 ]
+        base_xp: [ 0, 2000, 4000, 8000, 16_000, 32_000, 64_000, 120_000, 240_000, 360_000, 480_000, 600_000, 720_000, 840_000 ],
+        saves: [ { level: 3, values: [ 12, 13, 14, 15, 16 ] }, { level: 6, values: [ 10, 11, 12, 13, 14 ] },
+                 { level: 9, values: [ 8, 9, 10, 10, 12 ] }, { level: 12, values: [ 6, 7, 8, 8, 10 ] },
+                 { level: 14, values: [ 4, 5, 6, 5, 8 ] } ]
     },
     {
         name: "Halfling",
@@ -98,7 +107,9 @@ const classes = [
         languages: "Alignment, Common, Halfling",
         max_level: 8,
         thac0: [ { level: 3, value: 19 }, { level: 6, value: 17 }, { level: 8, value: 14 } ],
-        base_xp: [ 0, 2000, 4000, 8000, 16_000, 32_000, 64_000, 120_000 ]
+        base_xp: [ 0, 2000, 4000, 8000, 16_000, 32_000, 64_000, 120_000 ],
+        saves: [ { level: 3, values: [ 8, 9, 10, 13, 12 ] }, { level: 6, values: [ 6, 7, 8, 10, 10 ] },
+                 { level: 8, values: [ 4, 5, 6, 7, 8 ] } ]
     },
     {
         name: "Magic-user",
@@ -119,7 +130,9 @@ const classes = [
         max_level: 14,
         post_level_9_hd: [1, 2, 3, 4, 5],
         thac0: [ { level: 5, value: 19 }, { level: 10, value: 17 }, { level: 14, value: 14 } ],
-        base_xp: [ 0, 2500, 5000, 10_000, 20_000, 40_000, 80_000, 150_000, 300_000, 450_000, 600_000, 750_000, 900_000, 1_050_000 ]
+        base_xp: [ 0, 2500, 5000, 10_000, 20_000, 40_000, 80_000, 150_000, 300_000, 450_000, 600_000, 750_000, 900_000, 1_050_000 ],
+        saves: [ { level: 5, values: [ 13, 14, 13, 16, 15 ] }, { level: 10, values: [ 11, 12, 11, 14, 12 ] },
+                 { level: 14, values: [ 8, 9, 8, 11, 8 ] } ]
     },
     {
         name: "Thief",
@@ -135,7 +148,9 @@ const classes = [
         max_level: 14,
         post_level_9_hd: [2, 4, 6, 8, 10],
         thac0: [ { level: 4, value: 19 }, { level: 8, value: 17 }, { level: 12, value: 14 }, { level: 14, value: 12 } ],
-        base_xp: [ 0, 1200, 2400, 4800, 9600, 20_000, 40_000, 80_000, 160_000, 280_000, 400_000, 520_000, 640_000, 760_000 ]
+        base_xp: [ 0, 1200, 2400, 4800, 9600, 20_000, 40_000, 80_000, 160_000, 280_000, 400_000, 520_000, 640_000, 760_000 ],
+        saves: [ { level: 4, values: [ 13, 14, 13, 16, 15 ] }, { level: 8, values: [ 12, 13, 11, 14, 13 ] },
+                 { level: 12, values: [ 10, 11, 9, 12, 10 ] }, { level: 14, values: [ 8, 9, 7, 10, 8 ] } ]
     }
 ];
 
@@ -243,6 +258,14 @@ function xp_modifier_from_single_prime_req(value) {
         { limit: 12, modifier: 0 },
         { limit: 15, modifier: 5 }
     ], 10, value);
+}
+
+function saving_throws_for_level(saves_tab, level) {
+    for (var i = 0; i < saves_tab.length; ++i) {
+        if (level <= saves_tab[i].level)
+            return saves_tab[i].values;
+    }
+    return [0, 0, 0, 0, 0];
 }
 
 var level = 1;
@@ -455,6 +478,9 @@ if (chosen_class.spells) {
     }
     console.log(chalk.bold(`Spells: ${spells_msg}`));
 }
+const saves = saving_throws_for_level(chosen_class.saves, level);
+console.log(`${chalk.bold('Saving throws')} D ${chalk.bold(saves[0])} W ${chalk.bold(saves[1])} P ${chalk.bold(saves[2])} ` +
+            `B ${chalk.bold(saves[3])} S ${chalk.bold(saves[4])}`);
 if (chosen_class.base_xp[level - 1] > 0)
     console.log(`Base XP for level ${level}: ${chosen_class.base_xp[level - 1]}`);
 console.log(`Open doors ${open_doors_chance(str)}-in-6${chosen_class.other_info ? `, ${chosen_class.other_info}` : ''}`);
