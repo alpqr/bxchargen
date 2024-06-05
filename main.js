@@ -11,6 +11,7 @@ const classes = [
         shield_allowed: true,
         xp_mod: (str, dex, con, int, wis, cha) => xp_modifier_from_single_prime_req(wis),
         other_info: "Blunt weapons only",
+        blunt_weapons_only: true,
         languages: "Alignment, Common",
         spells: [
             [], [1], [2], [2, 1],
@@ -33,7 +34,8 @@ const classes = [
         armor_allowed: true,
         shield_allowed: true,
         xp_mod: (str, dex, con, int, wis, cha) => xp_modifier_from_single_prime_req(str),
-        other_info: "Infravision 60 ft, Listening at doors 2-in-6, Detect room traps 2-in-6, Detect construction tricks 2-in-6, Weapons small/normal sized only",
+        other_info: "Infravision 60, Listening at doors 2-in-6, Detect room traps 2-in-6, Detect construction tricks 2-in-6, Weapons small/normal sized only",
+        small_normal_weapons_only: true,
         languages: "Alignment, Common, Dwarvish, Gnomish, Goblin, Kobold",
         max_level: 12,
         post_level_9_hd: [3, 6, 9],
@@ -56,7 +58,7 @@ const classes = [
                 return 5;
             return 0;
         },
-        other_info: "Infravision 60 ft, Listening at doors 2-in-6, Detect secret doors 2-in-6, Immune to ghoul paralysis",
+        other_info: "Infravision 60, Listening at doors 2-in-6, Detect secret doors 2-in-6, Immune to ghoul paralysis",
         languages: "Alignment, Common, Elvish, Gnoll, Hobgoblin, Orcish",
         spells: [
             [1], [2], [2, 1], [2, 2],
@@ -104,6 +106,7 @@ const classes = [
             return 0;
         },
         other_info: "Listening at doors 2-in-6, Hiding 90% in woods / 2-in-6 in dungeons, Weapons and armor appropriate to size",
+        small_normal_weapons_only: true,
         languages: "Alignment, Common, Halfling",
         max_level: 8,
         thac0: [ { level: 3, value: 19 }, { level: 6, value: 17 }, { level: 8, value: 14 } ],
@@ -119,7 +122,8 @@ const classes = [
         armor_allowed: false,
         shield_allowed: false,
         xp_mod: (str, dex, con, int, wis, cha) => xp_modifier_from_single_prime_req(int),
-        other_info: "Dagger only",
+        other_info: "Dagger only, No armor, No shield",
+        dagger_only: true,
         languages: "Alignment, Common",
         spells: [
             [1], [2], [2, 1], [2, 2],
@@ -143,7 +147,7 @@ const classes = [
         leather_armor_only: true,
         shield_allowed: false,
         xp_mod: (str, dex, con, int, wis, cha) => xp_modifier_from_single_prime_req(dex),
-        other_info: "Back-stab",
+        other_info: "Back-stab, Leather armor only, No shield",
         languages: "Alignment, Common",
         max_level: 14,
         post_level_9_hd: [2, 4, 6, 8, 10],
@@ -175,6 +179,28 @@ const language_choices = [
     { value: 'Orcish' },
     { value: 'Pixie' },
     { value: 'Human dialect' }
+];
+
+const weapon_list = [
+    { value: 0, name: 'Battle axe (slow, two-handed)', smallnormal: true },
+    { value: 1, name: 'Club (blunt)', blunt: true, smallnormal: true },
+    { value: 2, name: 'Crossbow (slow, two-handed, 80/160/240)', smallnormal: true },
+    { value: 3, name: 'Dagger (melee or 10/20/30)', dagger: true, smallnormal: true },
+    { value: 4, name: 'Hand axe (melee or 10/20/30)', smallnormal: true },
+    { value: 5, name: 'Javelin (30/60/90)', smallnormal: true },
+    { value: 6, name: 'Lance (charge)' },
+    { value: 7, name: 'Longbow (two-handed, 70/140/210)' },
+    { value: 8, name: 'Mace (blunt)', blunt: true, smallnormal: true },
+    { value: 9, name: 'Polearm (brace, slow,two-handed)' },
+    { value: 10, name: 'Shortbow (two-handed, 50/100/150)', smallnormal: true },
+    { value: 11, name: 'Shortsword', smallnormal: true },
+    { value: 12, name: 'Silver dagger (melee or 10/20/30)', dagger: true, smallnormal: true },
+    { value: 13, name: 'Sling (blunt, 40/80/160)', blunt: true, smallnormal: true },
+    { value: 14, name: 'Spear (brace, melee or 20/40/60)' },
+    { value: 15, name: 'Staff (blunt, slow, two-handed)', blunt: true },
+    { value: 16, name: 'Sword', smallnormal: true },
+    { value: 17, name: 'Two-handed sword (slow, two-handed)' },
+    { value: 18, name: 'Warhammer (blunt)', blunt: true, smallnormal: true }
 ];
 
 function roll(sides, count, bonus) {
@@ -470,6 +496,19 @@ const print_ac = () => {
     }
 };
 
+var weapon_choices = [];
+weapon_list.forEach((w) => weapon_choices.push(
+    { name: w.name, value: w.value, disabled:
+        (chosen_class.blunt_weapons_only && !w.blunt)
+        || (chosen_class.dagger_only && !w.dagger)
+        || (chosen_class.small_normal_weapons_only && !w.smallnormal) }));
+const weapon_indices = await checkbox({
+    message: "Select weapons",
+    choices: weapon_choices,
+    pageSize: 12,
+    loop: false
+});
+
 var additional_languages = [];
 if (mod_lang > 0) {
     const lang_msg = `Choose ${mod_lang} additional language${mod_lang > 1 ? 's' : ''}`;
@@ -513,6 +552,11 @@ for (var i in chosen_class.thac0) {
 }
 console.log(chalk.bold(`THAC0 ${thac0}`));
 console.log(chalk.bold(`Speed ${chosen_armor.speed} / ${chosen_armor.speed / 3}`));
+var weapons = [];
+weapon_indices.forEach((i) => {
+    weapons.push(weapon_list[i].name);
+});
+console.log(chalk.bold(`Weapons ${weapons.join(', ')}`));
 if (chosen_class.spells) {
     var spells_msg = "";
     const spell_counts = chosen_class.spells[level - 1];
