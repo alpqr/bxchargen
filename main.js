@@ -555,7 +555,8 @@ const weapon_indices = await checkbox({
 var equipment = [];
 for ( ; ; ) {
     var equipment_choices = [];
-    equipment_choices.push({ name: "Done", value: -1 });
+    equipment_choices.push({ name: "Done", value: -2 });
+    equipment_choices.push({ name: "Reset", value: -1 });
     equipment_choices.push(new Separator());
     for (var i in equipment_list)
         equipment_choices.push({ name: equipment_list[i], value: i });
@@ -567,6 +568,8 @@ for ( ; ; ) {
     });
     if (idx >= 0)
         equipment.push(equipment_list[idx]);
+    else if (idx == -1)
+        equipment = [];
     else
         break;
 }
@@ -644,6 +647,7 @@ console.log(`Open doors ${open_doors_chance(str)}-in-6` +
             `${level_dep_info ? `, ${level_dep_info}` : ''}`);
 console.log(`Alignment ${alignment}`);
 console.log(`Languages ${languages.join(', ')}`);
-console.log(`Equipment ${equipment.join(', ')}`);
+if (equipment.length > 0)
+    console.log(`Equipment ${equipment.join(', ')}`);
 console.log(`XP ${chosen_class.base_xp[level - 1]}`);
 console.log(`HP ${max_hp}`);
