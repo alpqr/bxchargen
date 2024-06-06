@@ -164,27 +164,27 @@ const classes = [
     }
 ];
 
-const language_choices = [
-    { value: 'Bugbear' },
-    { value: 'Doppelganger' },
-    { value: 'Dragon' },
-    { value: 'Dwarvish' },
-    { value: 'Elvish' },
-    { value: 'Gargoyle' },
-    { value: 'Gnoll' },
-    { value: 'Gnomish' },
-    { value: 'Goblin' },
-    { value: 'Halfling' },
-    { value: 'Harpy' },
-    { value: 'Hobgoblin' },
-    { value: 'Kobold' },
-    { value: 'Lizard man' },
-    { value: 'Medusa' },
-    { value: 'Minotaur' },
-    { value: 'Ogre' },
-    { value: 'Orcish' },
-    { value: 'Pixie' },
-    { value: 'Human dialect' }
+const language_list = [
+    'Bugbear',
+    'Doppelganger',
+    'Dragon',
+    'Dwarvish',
+    'Elvish',
+    'Gargoyle',
+    'Gnoll',
+    'Gnomish',
+    'Goblin',
+    'Halfling',
+    'Harpy',
+    'Hobgoblin',
+    'Kobold',
+    'Lizard man',
+    'Medusa',
+    'Minotaur',
+    'Ogre',
+    'Orcish',
+    'Pixie',
+    'Human dialect'
 ];
 
 const weapon_list = [
@@ -207,6 +207,33 @@ const weapon_list = [
     { value: 16, name: 'Sword (1d8)', smallnormal: true },
     { value: 17, name: 'Two-handed sword (slow, 2-h, 1d10)' },
     { value: 18, name: 'Warhammer (blunt, 1d6)', blunt: true, smallnormal: true }
+];
+
+const equipment_list = [
+    'Backpack',
+    'Crowbar',
+    'Garlic',
+    'Grappling hook',
+    'Hammer (small)',
+    'Holy symbol',
+    'Holy water (vial)',
+    'Iron spikes (12)',
+    'Lantern',
+    'Mirror (hand-sized)',
+    'Oil flask',
+    'Standard rations (7)',
+    'Iron rations (7)',
+    'Rope (50 ft)',
+    'Sack (large)',
+    'Sack (small)',
+    'Stakes (3) and mallet',
+    "Thieves' tools",
+    'Tinder box',
+    'Torches (6)',
+    'Waterskin',
+    'Wine (2 pints)',
+    'Wooden pole (10 ft)',
+    'Wolfsbane (1 bunch)'
 ];
 
 function roll(sides, count, bonus) {
@@ -525,13 +552,32 @@ const weapon_indices = await checkbox({
     }
 });
 
+var equipment = [];
+for ( ; ; ) {
+    var equipment_choices = [];
+    equipment_choices.push({ name: "Done", value: -1 });
+    equipment_choices.push(new Separator());
+    for (var i in equipment_list)
+        equipment_choices.push({ name: equipment_list[i], value: i });
+    const idx = await select({
+        message: "Add more equipment",
+        choices: equipment_choices,
+        pageSize: 12,
+        loop: false
+    });
+    if (idx >= 0)
+        equipment.push(equipment_list[idx]);
+    else
+        break;
+}
+
 var additional_languages = [];
 if (mod_lang > 0) {
     const lang_msg = `Choose ${mod_lang} additional language${mod_lang > 1 ? 's' : ''}`;
     const already_known = new Set(chosen_class.languages.split(', '));
     var language_select_choices = [];
-    language_choices.forEach((choice) => language_select_choices.push(
-        { value: choice.value, disabled: already_known.has(choice.value) }));
+    language_list.forEach((lang) => language_select_choices.push(
+        { value: lang, disabled: already_known.has(lang) }));
     additional_languages = await checkbox({
         message: lang_msg,
         choices: language_select_choices,
@@ -598,5 +644,6 @@ console.log(`Open doors ${open_doors_chance(str)}-in-6` +
             `${level_dep_info ? `, ${level_dep_info}` : ''}`);
 console.log(`Alignment ${alignment}`);
 console.log(`Languages ${languages.join(', ')}`);
+console.log(`Equipment ${equipment.join(', ')}`);
 console.log(`XP ${chosen_class.base_xp[level - 1]}`);
 console.log(`HP ${max_hp}`);
