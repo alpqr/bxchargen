@@ -122,7 +122,7 @@ const classes = [
         armor_allowed: false,
         shield_allowed: false,
         xp_mod: (str, dex, con, int, wis, cha) => xp_modifier_from_single_prime_req(int),
-        other_info: "Dagger only, No armor, No shield",
+        other_info: "Dagger only, No armor, No shields",
         dagger_only: true,
         languages: "Alignment, Common",
         spells: [
@@ -147,7 +147,13 @@ const classes = [
         leather_armor_only: true,
         shield_allowed: false,
         xp_mod: (str, dex, con, int, wis, cha) => xp_modifier_from_single_prime_req(dex),
-        other_info: "Back-stab, Leather armor only, No shield",
+        other_info: "Back-stab, Leather armor only, No shields",
+        level_dep_info: (level) => {
+            var r = level >= 4 ? [ "Read languages" ] : [];
+            if (level >= 10)
+                r.push("Scroll use");
+            return r.join(", ");
+        },
         languages: "Alignment, Common",
         max_level: 14,
         post_level_9_hd: [2, 4, 6, 8, 10],
@@ -182,25 +188,25 @@ const language_choices = [
 ];
 
 const weapon_list = [
-    { value: 0, name: 'Battle axe (slow, two-handed)', smallnormal: true },
-    { value: 1, name: 'Club (blunt)', blunt: true, smallnormal: true },
-    { value: 2, name: 'Crossbow (slow, two-handed, 80/160/240)', smallnormal: true },
-    { value: 3, name: 'Dagger (melee or 10/20/30)', dagger: true, smallnormal: true },
-    { value: 4, name: 'Hand axe (melee or 10/20/30)', smallnormal: true },
-    { value: 5, name: 'Javelin (30/60/90)', smallnormal: true },
-    { value: 6, name: 'Lance (charge)' },
-    { value: 7, name: 'Longbow (two-handed, 70/140/210)' },
-    { value: 8, name: 'Mace (blunt)', blunt: true, smallnormal: true },
-    { value: 9, name: 'Polearm (brace, slow,two-handed)' },
-    { value: 10, name: 'Shortbow (two-handed, 50/100/150)', smallnormal: true },
-    { value: 11, name: 'Shortsword', smallnormal: true },
-    { value: 12, name: 'Silver dagger (melee or 10/20/30)', dagger: true, smallnormal: true },
-    { value: 13, name: 'Sling (blunt, 40/80/160)', blunt: true, smallnormal: true },
-    { value: 14, name: 'Spear (brace, melee or 20/40/60)' },
-    { value: 15, name: 'Staff (blunt, slow, two-handed)', blunt: true },
-    { value: 16, name: 'Sword', smallnormal: true },
-    { value: 17, name: 'Two-handed sword (slow, two-handed)' },
-    { value: 18, name: 'Warhammer (blunt)', blunt: true, smallnormal: true }
+    { value: 0, name: 'Battle axe (slow, 2-h, 1d8)', smallnormal: true },
+    { value: 1, name: 'Club (blunt, 1d4)', blunt: true, smallnormal: true },
+    { value: 2, name: 'Crossbow (slow, 2-h, 1d6, 80/160/240)', smallnormal: true },
+    { value: 3, name: 'Dagger (1d4, 10/20/30 as missile)', dagger: true, smallnormal: true },
+    { value: 4, name: 'Hand axe (1d6, 10/20/30 as missile)', smallnormal: true },
+    { value: 5, name: 'Javelin (1d4, 30/60/90)', smallnormal: true },
+    { value: 6, name: 'Lance (charge, 1d6)' },
+    { value: 7, name: 'Longbow (2-h, 1d6, 70/140/210)' },
+    { value: 8, name: 'Mace (blunt, 1d6)', blunt: true, smallnormal: true },
+    { value: 9, name: 'Polearm (brace, slow, 2-h, 1d10)' },
+    { value: 10, name: 'Shortbow (2-h, 1d6, 50/100/150)', smallnormal: true },
+    { value: 11, name: 'Shortsword (1d6)', smallnormal: true },
+    { value: 12, name: 'Silver dagger (1d4, 10/20/30 as missile)', dagger: true, smallnormal: true },
+    { value: 13, name: 'Sling (blunt, 1d4, 40/80/160)', blunt: true, smallnormal: true },
+    { value: 14, name: 'Spear (brace, 1d6, 20/40/60 as missile)' },
+    { value: 15, name: 'Staff (blunt, slow, 2-h, 1d4)', blunt: true },
+    { value: 16, name: 'Sword (1d8)', smallnormal: true },
+    { value: 17, name: 'Two-handed sword (slow, 2-h, 1d10)' },
+    { value: 18, name: 'Warhammer (blunt, 1d6)', blunt: true, smallnormal: true }
 ];
 
 function roll(sides, count, bonus) {
@@ -465,12 +471,14 @@ for (var i in armor) {
     else
         armor_choices.push({ name: armor[i].name, value: i });
 }
-
-const armor_answer = await select({
-    message: "Select armor",
-    choices: armor_choices
-});
-const chosen_armor = armor[armor_answer];
+var chosen_armor = armor[0]; // None
+if (chosen_class.armor_allowed) {
+    const armor_answer = await select({
+        message: "Select armor",
+        choices: armor_choices
+    });
+    chosen_armor = armor[armor_answer];
+}
 
 var has_shield = false;
 if (chosen_class.shield_allowed) {
@@ -496,17 +504,25 @@ const print_ac = () => {
     }
 };
 
-var weapon_choices = [];
-weapon_list.forEach((w) => weapon_choices.push(
-    { name: w.name, value: w.value, disabled:
-        (chosen_class.blunt_weapons_only && !w.blunt)
+var weapon_select_choices = [];
+for (var i in weapon_list) {
+    const w = weapon_list[i];
+    const skip = (chosen_class.blunt_weapons_only && !w.blunt)
         || (chosen_class.dagger_only && !w.dagger)
-        || (chosen_class.small_normal_weapons_only && !w.smallnormal) }));
+        || (chosen_class.small_normal_weapons_only && !w.smallnormal);
+    if (!skip)
+        weapon_select_choices.push(w);
+}
 const weapon_indices = await checkbox({
     message: "Select weapons",
-    choices: weapon_choices,
+    choices: weapon_select_choices,
     pageSize: 12,
-    loop: false
+    loop: false,
+    validate: (choices) => {
+        if (choices.length > 0)
+            return true;
+        return 'Select at least one weapon';
+    }
 });
 
 var additional_languages = [];
@@ -528,6 +544,9 @@ if (mod_lang > 0) {
         }
     });
 }
+var languages_set = new Set(chosen_class.languages.split(', '));
+additional_languages.forEach((lang) => languages_set.add(lang));
+const languages = [...languages_set.values()];
 
 const alignment = await select({
     message: "Select alignment",
@@ -553,9 +572,7 @@ for (var i in chosen_class.thac0) {
 console.log(chalk.bold(`THAC0 ${thac0}`));
 console.log(chalk.bold(`Speed ${chosen_armor.speed} / ${chosen_armor.speed / 3}`));
 var weapons = [];
-weapon_indices.forEach((i) => {
-    weapons.push(weapon_list[i].name);
-});
+weapon_indices.forEach((i) => { weapons.push(weapon_list[i].name); });
 console.log(chalk.bold(`Weapons ${weapons.join(', ')}`));
 if (chosen_class.spells) {
     var spells_msg = "";
@@ -575,10 +592,11 @@ if (chosen_class.spells) {
 const saves = saving_throws_for_level(chosen_class.saves, level);
 console.log(`${chalk.bold('Saving throws')} D ${chalk.bold(saves[0])} W ${chalk.bold(saves[1])} P ${chalk.bold(saves[2])} ` +
             `B ${chalk.bold(saves[3])} S ${chalk.bold(saves[4])}`);
-if (chosen_class.base_xp[level - 1] > 0)
-    console.log(`Base XP for level ${level}: ${chosen_class.base_xp[level - 1]}`);
-console.log(`Open doors ${open_doors_chance(str)}-in-6${chosen_class.other_info ? `, ${chosen_class.other_info}` : ''}`);
+const level_dep_info = chosen_class.level_dep_info ? chosen_class.level_dep_info(level) : null;
+console.log(`Open doors ${open_doors_chance(str)}-in-6` +
+            `${chosen_class.other_info ? `, ${chosen_class.other_info}` : ''}` +
+            `${level_dep_info ? `, ${level_dep_info}` : ''}`);
 console.log(`Alignment ${alignment}`);
-var languages = new Set(chosen_class.languages.split(', '));
-additional_languages.forEach((lang) => languages.add(lang));
-console.log(`Languages ${[...languages.values()].join(', ')}`);
+console.log(`Languages ${languages.join(', ')}`);
+console.log(`XP ${chosen_class.base_xp[level - 1]}`);
+console.log(`HP ${max_hp}`);
