@@ -210,29 +210,30 @@ const weapon_list = [
 ];
 
 const equipment_list = [
-    'Backpack',
-    'Crowbar',
-    'Garlic',
-    'Grappling hook',
-    'Hammer (small)',
+    'Rations (7)',
+    'Torches (6)',
+    'Oil flask',
+    'Lantern',
+    'Tinder box',
+    'Waterskin',
+    "Thieves' tools",
     'Holy symbol',
     'Holy water (vial)',
+
     'Iron spikes (12)',
-    'Lantern',
     'Mirror (hand-sized)',
-    'Oil flask',
-    'Standard rations (7)',
-    'Iron rations (7)',
     'Rope (50 ft)',
+    'Wooden pole (10 ft)',
+    'Garlic',
+    'Stakes (3) and mallet',
+
+    'Backpack',
+    'Crowbar',
+    'Grappling hook',
+    'Hammer (small)',
     'Sack (large)',
     'Sack (small)',
-    'Stakes (3) and mallet',
-    "Thieves' tools",
-    'Tinder box',
-    'Torches (6)',
-    'Waterskin',
     'Wine (2 pints)',
-    'Wooden pole (10 ft)',
     'Wolfsbane (1 bunch)'
 ];
 
