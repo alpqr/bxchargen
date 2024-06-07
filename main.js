@@ -65,6 +65,7 @@ const classes = [
             [2, 2, 1], [2, 2, 2], [3, 2, 2, 1], [3, 3, 2, 2],
             [3, 3, 3, 2, 1], [3, 3, 3, 3, 2]
         ],
+        spell_book: true,
         max_level: 10,
         post_level_9_hd: [2],
         thac0: [ { level: 3, value: 19 }, { level: 6, value: 17 }, { level: 9, value: 14 }, { level: 10, value: 12 } ],
@@ -131,6 +132,7 @@ const classes = [
             [3, 3, 3, 2, 1], [3, 3, 3, 3, 2], [4, 3, 3, 3, 2, 1], [4, 4, 3, 3, 3, 2],
             [4, 4, 4, 3, 3, 3], [4, 4, 4, 4, 3, 3]
         ],
+        spell_book: true,
         max_level: 14,
         post_level_9_hd: [1, 2, 3, 4, 5],
         thac0: [ { level: 5, value: 19 }, { level: 10, value: 17 }, { level: 14, value: 14 } ],
@@ -235,6 +237,93 @@ const equipment_list = [
     { name: 'Small sack', unit: 1 },
     { name: 'Wine', unit: 2, unit_str: 'pints' },
     { name: 'Wolfsbane', unit: 1, unit_str: 'bunch' }
+];
+
+const magicuser_spell_list = [
+    [
+        'Charm person',
+        'Detect magic',
+        'Floating disc',
+        'Hold portal',
+        'Light',
+        'Magic missile',
+        'Protection from evil',
+        'Read languages',
+        'Read magic',
+        'Shield',
+        'Sleep',
+        'Ventriloquism'
+    ],
+    [
+        'Continual light',
+        'Detect evil',
+        'Detect invisible',
+        'ESP',
+        'Invisibility',
+        'Knock',
+        'Levitate',
+        'Location object',
+        'Mirror image',
+        'Phantasmal force',
+        'Web',
+        'Wizard lock'
+    ],
+    [
+        'Clairvoyance',
+        'Dispel magic',
+        'Fireball',
+        'Fly',
+        'Haste',
+        'Hold person',
+        'Infravision',
+        'Invisibility 10 ft radius',
+        'Lightning bolt',
+        'Protection from evil 10 ft radius',
+        'Protection from normal missiles',
+        'Water breathing'
+    ],
+    [
+        'Charm monster',
+        'Confusion',
+        'Dimension door',
+        'Growth of plants',
+        'Hallucinatory terrain',
+        'Massmorph',
+        'Polymorph others',
+        'Polymorph self',
+        'Remove curse',
+        'Wall of fire',
+        'Wall of ice',
+        'Wizard eye'
+    ],
+    [
+        'Animate dead',
+        'Cloudkill',
+        'Conjure elemental',
+        'Contact higher plane',
+        'Feeblemind',
+        'Hold monster',
+        'Magic jar',
+        'Pass-wall',
+        'Telekinesis',
+        'Teleport',
+        'Transmute rock to mud',
+        'Wall of stone'
+    ],
+    [
+        'Anti-magic shell',
+        'Control weather',
+        'Death spell',
+        'Disintegrate',
+        'Geas',
+        'Invisible stalker',
+        'Lower water',
+        'Move earth',
+        'Part water',
+        'Projected image',
+        'Reincarnation',
+        'Stone to flesh'
+    ]
 ];
 
 function roll(sides, count, bonus) {
@@ -552,6 +641,16 @@ const weapon_indices = await checkbox({
         return 'Select at least one weapon';
     }
 });
+var needs_arrows = false, needs_bolts = false, needs_slingstones = false;
+weapon_indices.forEach((i) => {
+    const w = weapon_list[i];
+    if (w.needs_arrows)
+        needs_arrows = true;
+    if (w.needs_bolts)
+        needs_bolts = true;
+    if (w.needs_slingstones)
+        needs_slingstones = true;
+});
 
 var equipment = [];
 for ( ; ; ) {
@@ -581,6 +680,47 @@ for ( ; ; ) {
         equipment = [];
     else
         break;
+}
+if (needs_arrows)
+    equipment.push({ name: 'Arrow', count: 1, unit: 20});
+if (needs_bolts)
+    equipment.push({ name: 'Crossbow bolt', count: 1, unit: 30});
+if (needs_slingstones)
+    equipment.push({ name: 'Sling stones', count: 1 });
+
+var spell_book = [];
+if (chosen_class.spell_book && chosen_class.spells) {
+    if (await expand({
+        message: "Define spell book?",
+        default: 'y',
+        choices: [
+            { key: "y", name: "Yes", value: "y" },
+            { key: "n", name: "No", value: "n" }
+        ]
+    }) == "y")
+    {
+        const spell_counts = chosen_class.spells[level - 1];
+        for (var i = 0; i < spell_counts.length; ++i) {
+            const spell_level = i + 1;
+            const count = spell_counts[i];
+            var spell_choices = [];
+            for (var s of magicuser_spell_list[i])
+                spell_choices.push({ value: s });
+            const choices = await checkbox({
+                message: `Choose ${count} from level ${spell_level} spells`,
+                choices: spell_choices,
+                pageSize: 12,
+                loop: false,
+                validate: (choices) => {
+                    if (choices.length === count)
+                        return true;
+                    return `Choose ${count} spells`;
+                }
+            });
+            for (var s of choices)
+                spell_book.push(`${s} (lv${spell_level})`);
+        }
+    }
 }
 
 var additional_languages = [];
@@ -630,17 +770,7 @@ for (var i in chosen_class.thac0) {
 console.log(chalk.bold(`THAC0 ${thac0}`));
 console.log(chalk.bold(`Speed ${chosen_armor.speed} / ${chosen_armor.speed / 3}`));
 var weapons = [];
-var needs_arrows = false, needs_bolts = false, needs_slingstones = false;
-weapon_indices.forEach((i) => {
-    const w = weapon_list[i];
-    weapons.push(w.name);
-    if (w.needs_arrows)
-        needs_arrows = true;
-    if (w.needs_bolts)
-        needs_bolts = true;
-    if (w.needs_slingstones)
-        needs_slingstones = true;
-});
+weapon_indices.forEach((i) => { weapons.push(weapon_list[i].name); });
 console.log(chalk.bold(`Weapons ${weapons.join(', ')}`));
 if (chosen_class.spells) {
     var spells_msg = "";
@@ -656,6 +786,8 @@ if (chosen_class.spells) {
         }
     }
     console.log(chalk.bold(`Spells ${spells_msg}`));
+    if (spell_book.length > 0)
+        console.log(chalk.bold(`Spell book ${spell_book.join(', ')}`));
 }
 const saves = saving_throws_for_level(chosen_class.saves, level);
 console.log(`${chalk.bold('Saving throws')} D ${chalk.bold(saves[0])} W ${chalk.bold(saves[1])} P ${chalk.bold(saves[2])} ` +
@@ -667,12 +799,6 @@ console.log(`Open doors ${open_doors_chance(str)}-in-6` +
 console.log(`Alignment ${alignment}`);
 console.log(`Languages ${languages.join(', ')}`);
 var equipment_arr = [];
-if (needs_arrows)
-    equipment.push({ name: 'Arrow', count: 1, unit: 20});
-if (needs_bolts)
-    equipment.push({ name: 'Crossbow bolt', count: 1, unit: 30});
-if (needs_slingstones)
-    equipment.push({ name: 'Sling stones', count: 1 });
 equipment.forEach((thing) => {
     var str = `${thing.name}`;
     if (thing.count * thing.unit > 1) {
