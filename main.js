@@ -190,18 +190,18 @@ const language_list = [
 const weapon_list = [
     { value: 0, name: 'Battle axe (slow, 2-h, 1d8)', smallnormal: true },
     { value: 1, name: 'Club (blunt, 1d4)', blunt: true, smallnormal: true },
-    { value: 2, name: 'Crossbow (slow, 2-h, 1d6, 80/160/240)', smallnormal: true },
+    { value: 2, name: 'Crossbow (slow, 2-h, 1d6, 80/160/240)', smallnormal: true, needs_bolts: true },
     { value: 3, name: 'Dagger (1d4, 10/20/30 as missile)', dagger: true, smallnormal: true },
     { value: 4, name: 'Hand axe (1d6, 10/20/30 as missile)', smallnormal: true },
     { value: 5, name: 'Javelin (1d4, 30/60/90)', smallnormal: true },
     { value: 6, name: 'Lance (charge, 1d6)' },
-    { value: 7, name: 'Longbow (2-h, 1d6, 70/140/210)' },
+    { value: 7, name: 'Longbow (2-h, 1d6, 70/140/210)', needs_arrows: true },
     { value: 8, name: 'Mace (blunt, 1d6)', blunt: true, smallnormal: true },
     { value: 9, name: 'Polearm (brace, slow, 2-h, 1d10)' },
-    { value: 10, name: 'Shortbow (2-h, 1d6, 50/100/150)', smallnormal: true },
+    { value: 10, name: 'Shortbow (2-h, 1d6, 50/100/150)', smallnormal: true, needs_arrows: true },
     { value: 11, name: 'Shortsword (1d6)', smallnormal: true },
     { value: 12, name: 'Silver dagger (1d4, 10/20/30 as missile)', dagger: true, smallnormal: true },
-    { value: 13, name: 'Sling (blunt, 1d4, 40/80/160)', blunt: true, smallnormal: true },
+    { value: 13, name: 'Sling (blunt, 1d4, 40/80/160)', blunt: true, smallnormal: true, needs_slingstones: true },
     { value: 14, name: 'Spear (brace, 1d6, 20/40/60 as missile)' },
     { value: 15, name: 'Staff (blunt, slow, 2-h, 1d4)', blunt: true },
     { value: 16, name: 'Sword (1d8)', smallnormal: true },
@@ -630,7 +630,17 @@ for (var i in chosen_class.thac0) {
 console.log(chalk.bold(`THAC0 ${thac0}`));
 console.log(chalk.bold(`Speed ${chosen_armor.speed} / ${chosen_armor.speed / 3}`));
 var weapons = [];
-weapon_indices.forEach((i) => { weapons.push(weapon_list[i].name); });
+var needs_arrows = false, needs_bolts = false, needs_slingstones = false;
+weapon_indices.forEach((i) => {
+    const w = weapon_list[i];
+    weapons.push(w.name);
+    if (w.needs_arrows)
+        needs_arrows = true;
+    if (w.needs_bolts)
+        needs_bolts = true;
+    if (w.needs_slingstones)
+        needs_slingstones = true;
+});
 console.log(chalk.bold(`Weapons ${weapons.join(', ')}`));
 if (chosen_class.spells) {
     var spells_msg = "";
@@ -657,6 +667,12 @@ console.log(`Open doors ${open_doors_chance(str)}-in-6` +
 console.log(`Alignment ${alignment}`);
 console.log(`Languages ${languages.join(', ')}`);
 var equipment_arr = [];
+if (needs_arrows)
+    equipment.push({ name: 'Arrow', count: 1, unit: 20});
+if (needs_bolts)
+    equipment.push({ name: 'Crossbow bolt', count: 1, unit: 30});
+if (needs_slingstones)
+    equipment.push({ name: 'Sling stones', count: 1 });
 equipment.forEach((thing) => {
     var str = `${thing.name}`;
     if (thing.count * thing.unit > 1) {
