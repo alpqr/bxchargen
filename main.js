@@ -210,31 +210,31 @@ const weapon_list = [
 ];
 
 const equipment_list = [
-    'Rations (7)',
-    'Torches (6)',
-    'Oil flask',
-    'Lantern',
-    'Tinder box',
-    'Waterskin',
-    "Thieves' tools",
-    'Holy symbol',
-    'Holy water (vial)',
+    { name: 'Ration', unit: 7 },
+    { name: 'Torch', unit: 6 },
+    { name: 'Oil flask', unit: 1 },
+    { name: 'Lantern', unit: 1 },
+    { name: 'Tinder box', unit: 1 },
+    { name: 'Waterskin', unit: 1 },
+    { name: "Thieves' tools", unit: 1 },
+    { name: 'Holy symbol', unit: 1 },
+    { name: 'Holy water vial', unit: 1 },
 
-    'Iron spikes (12)',
-    'Mirror (hand-sized)',
-    'Rope (50 ft)',
-    'Wooden pole (10 ft)',
-    'Garlic',
-    'Stakes (3) and mallet',
+    { name: 'Iron spike', unit: 12 },
+    { name: 'Hand mirror', unit: 1 },
+    { name: 'Rope', unit: 50, unit_str: 'ft' },
+    { name: 'Ten foot wooden pole', unit: 1 },
+    { name: 'Garlic', unit: 1 },
+    { name: 'Stakes and mallet', unit: 3 },
 
-    'Backpack',
-    'Crowbar',
-    'Grappling hook',
-    'Hammer (small)',
-    'Sack (large)',
-    'Sack (small)',
-    'Wine (2 pints)',
-    'Wolfsbane (1 bunch)'
+    { name: 'Backpack', unit: 1 },
+    { name: 'Crowbar', unit: 1 },
+    { name: 'Grappling hook', unit: 1 },
+    { name: 'Small hammer', unit: 1 },
+    { name: 'Large sack', unit: 1 },
+    { name: 'Small sack', unit: 1 },
+    { name: 'Wine', unit: 2, unit_str: 'pints' },
+    { name: 'Wolfsbane', unit: 1, unit_str: 'bunch' }
 ];
 
 function roll(sides, count, bonus) {
@@ -559,17 +559,25 @@ for ( ; ; ) {
     equipment_choices.push({ name: "Done", value: -2 });
     equipment_choices.push({ name: "Reset", value: -1 });
     equipment_choices.push(new Separator());
-    for (var i in equipment_list)
-        equipment_choices.push({ name: equipment_list[i], value: i });
+    for (var i in equipment_list) {
+        const thing = equipment_list[i];
+        const str = `${thing.name}${thing.unit > 1 ? ' (' + thing.unit + ')' : ''}`;
+        equipment_choices.push({ name: str , value: i });
+    }
     const idx = await select({
         message: "Add more equipment",
         choices: equipment_choices,
         pageSize: 12,
         loop: false
     });
-    if (idx >= 0)
-        equipment.push(equipment_list[idx]);
-    else if (idx == -1)
+    if (idx >= 0) {
+        const thing = equipment_list[idx];
+        const eqIdx = equipment.findIndex((element) => element.name == thing.name);
+        if (eqIdx >= 0)
+            equipment[eqIdx].count += 1;
+        else
+            equipment.push({ name: thing.name, count: 1, unit: thing.unit, unit_str: thing.unit_str });
+    } else if (idx == -1)
         equipment = [];
     else
         break;
@@ -648,7 +656,18 @@ console.log(`Open doors ${open_doors_chance(str)}-in-6` +
             `${level_dep_info ? `, ${level_dep_info}` : ''}`);
 console.log(`Alignment ${alignment}`);
 console.log(`Languages ${languages.join(', ')}`);
-if (equipment.length > 0)
-    console.log(`Equipment ${equipment.join(', ')}`);
+var equipment_arr = [];
+equipment.forEach((thing) => {
+    var str = `${thing.name}`;
+    if (thing.count * thing.unit > 1) {
+        str += ` (${thing.count * thing.unit}`;
+        if (thing.unit_str)
+            str += ` ${thing.unit_str}`;
+        str += ')';
+    }
+    equipment_arr.push(str);
+});
+if (equipment_arr.length > 0)
+    console.log(`Equipment ${equipment_arr.join(', ')}`);
 console.log(`XP ${chosen_class.base_xp[level - 1]}`);
 console.log(`HP ${max_hp}`);
