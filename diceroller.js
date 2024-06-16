@@ -12,19 +12,19 @@ function roll(sides, count, bonus) {
 
 for ( ; ; ) {
     const sides = await select({
-        message: "Dice (kbd shortcuts: 1-9, Q)",
+        message: "Dice",
         choices: [
-            { name: "d2", value: 2 },
-            { name: "d3", value: 3 },
-            { name: "d4", value: 4 },
-            { name: "d6", value: 6 },
-            { name: "d8", value: 8 },
-            { name: "d10", value: 10 },
-            { name: "d12", value: 12 },
-            { name: "d20", value: 20 },
-            { name: "d100", value: 100 },
+            { name: "1) d2", value: 2 },
+            { name: "2) d3", value: 3 },
+            { name: "3) d4", value: 4 },
+            { name: "4) d6", value: 6 },
+            { name: "5) d8", value: 8 },
+            { name: "6) d10", value: 10 },
+            { name: "7) d12", value: 12 },
+            { name: "8) d20", value: 20 },
+            { name: "9) d100", value: 100 },
             new Separator(),
-            { name: "Quit", value: 0 }
+            { name: "Q) Quit", value: 0 }
         ],
         pageSize: 12
     });
