@@ -439,7 +439,7 @@ const cleric_spell_list = [
         'Create water',
         'Cure serious wounds (Rev.: Cause serious wounds)',
         'Neutralize posion',
-        'Protection from evil 10 ft',
+        'Protection from evil 10 ft radius',
         'Speak with plants',
         'Sticks to snakes'
     ],
@@ -929,6 +929,12 @@ if (chosen_class.divine_magic && chosen_class.spells && chosen_class.spells[leve
         const spell_counts = chosen_class.spells[level - 1];
         for (var i = 0; i < spell_counts.length; ++i) {
             const spell_level = i + 1;
+            const fixed_spells = chosen_class.autoequip.fixed_spell_indices ? chosen_class.autoequip.fixed_spell_indices(level) : [];
+            if (fixed_spells.length > 0) {
+                for (var j = 0; j < fixed_spells.length; ++j)
+                    current_cleric_spells.push(`${cleric_spell_list[i][fixed_spells[j]]} (lv${spell_level})`);
+                continue;
+            }
             var indices_generated = [];
             for (var j = 0; j < spell_counts[i]; ++j) {
                 for ( ; ; ) {
