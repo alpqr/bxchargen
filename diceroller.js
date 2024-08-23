@@ -1,14 +1,6 @@
 import chalk from 'chalk'
-import { select, input, Separator } from '@inquirer/prompts';
-
-function roll(sides, count, bonus) {
-    var result = 0;
-    for (var i = 0; i < (count ?? 1); ++i)
-        result += Math.floor(Math.random() * sides) + 1;
-    if (bonus)
-        result += bonus;
-    return result;
-}
+import { select, input, Separator } from '@inquirer/prompts'
+import { roll } from './funcs.js'
 
 for ( ; ; ) {
     const sides = await select({
