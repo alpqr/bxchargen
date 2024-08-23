@@ -687,10 +687,10 @@ for ( ; ; ) {
             max_hp += chosen_class.post_level_9_hd[level_hd - 9];
         }
     }
-    console.log(chalk.bold(`Max HP ${max_hp} (Hit dice 1d${chosen_class.hit_dice})`));
     if (auto_mode) {
         break;
     } else {
+        console.log(chalk.bold(`Max HP ${max_hp} (Hit dice 1d${chosen_class.hit_dice})`));
         const hp_ok = await expand({
             message: "Accept HP?",
             default: 'y',
