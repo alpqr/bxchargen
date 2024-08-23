@@ -21,9 +21,9 @@ function modifier_as_suffix(ability_modifier) {
     return "";
 }
 
-function print_modifier_msg(ability_modifier, msg, extra_msg) {
+function print_modifier_msg(ability_modifier, msg_prefix, msg, extra_msg) {
     if (ability_modifier != 0) {
-        var full_msg = `${ability_modifier > 0 ? '+' : ''}${ability_modifier}${msg}`;
+        var full_msg = `${msg_prefix}${ability_modifier > 0 ? '+' : ''}${ability_modifier}${msg}`;
         full_msg = ability_modifier > 0 ? chalk.green(full_msg) : chalk.red(full_msg);
         if (extra_msg)
             full_msg += ' ' + extra_msg;
@@ -31,7 +31,7 @@ function print_modifier_msg(ability_modifier, msg, extra_msg) {
     }
 }
 
-function print_cha_msg(cha) {
+function print_cha_msg(cha, msg_prefix) {
     const r = npc_reactions(cha);
     var reactions_msg = "";
     var color_func = null;
@@ -39,7 +39,7 @@ function print_cha_msg(cha) {
         reactions_msg = `${r > 0 ? `+${r}` : `${r}`} to NPC reactions, `;
         color_func = r > 0 ? chalk.green : chalk.red;
     }
-    const msg = `${reactions_msg}Max retainers ${max_retainers(cha)}, Retainer loyalty ${retainer_loyalty(cha)}`;
+    const msg = `${msg_prefix}${reactions_msg}Max retainers ${max_retainers(cha)}, Retainer loyalty ${retainer_loyalty(cha)}`;
     console.log(color_func ? color_func(msg) : msg);
 }
 
@@ -102,6 +102,15 @@ function weapon_ok_for_class(char_class, weapon) {
     return ok;
 }
 
+const markdown = process.argv.includes("--md");
+
+function header(text) {
+    if (markdown)
+        return chalk.cyan('**' + text + '**');
+    else
+        return chalk.cyan(text);
+}
+
 var level = 1;
 var str, dex, con, int, wis, cha;
 var mod_melee, mod_missile, mod_ac, mod_hp, mod_magicsave, mod_lang, mod_react;
@@ -109,25 +118,32 @@ var mod_missile_extra, mod_xp;
 var chosen_class;
 
 const print_abilities = (in_result) => {
-    console.log(`STR ${chalk.bold(str)}${modifier_as_suffix(mod_melee)} ` +
-                `DEX ${chalk.bold(dex)}${modifier_as_suffix(mod_missile)} ` +
-                `CON ${chalk.bold(con)}${modifier_as_suffix(mod_hp)} ` +
-                `INT ${chalk.bold(int)}${modifier_as_suffix(mod_lang)} ` +
-                `WIS ${chalk.bold(wis)}${modifier_as_suffix(mod_magicsave)} ` +
-                `CHA ${chalk.bold(cha)}${modifier_as_suffix(mod_react)}`)
-    print_modifier_msg(mod_melee, " to melee attack and damage due to STR")
+    const decorate = (ability) => {
+        if (in_result && markdown)
+            return `**${ability}**`;
+        else
+            return ability;
+    };
+    console.log(`${decorate('STR')} ${chalk.bold(str)}${modifier_as_suffix(mod_melee)} ` +
+                `${decorate('DEX')} ${chalk.bold(dex)}${modifier_as_suffix(mod_missile)} ` +
+                `${decorate('CON')} ${chalk.bold(con)}${modifier_as_suffix(mod_hp)} ` +
+                `${decorate('INT')} ${chalk.bold(int)}${modifier_as_suffix(mod_lang)} ` +
+                `${decorate('WIS')} ${chalk.bold(wis)}${modifier_as_suffix(mod_magicsave)} ` +
+                `${decorate('CHA')} ${chalk.bold(cha)}${modifier_as_suffix(mod_react)}`)
+    const msg_prefix = in_result && markdown ? "- " : "";
+    print_modifier_msg(mod_melee, msg_prefix, " to melee attack and damage due to STR")
     if (mod_missile && !mod_missile_extra)
-        print_modifier_msg(mod_missile, " to missile attack due to DEX")
+        print_modifier_msg(mod_missile, msg_prefix, " to missile attack due to DEX")
     else if (!mod_missile && mod_missile_extra)
-        print_modifier_msg(mod_missile_extra, " to missile attack due to class");
+        print_modifier_msg(mod_missile_extra, msg_prefix, " to missile attack due to class");
     else if (mod_missile && mod_missile_extra)
-        print_modifier_msg(mod_missile + mod_missile_extra, " to missile attack due to DEX and class");
-    print_modifier_msg(mod_ac, " to AC due to DEX", `${in_result ? '(included in AC below)' : ''}`);
-    print_modifier_msg(mod_hp, " to hit dice due to CON");
-    print_modifier_msg(mod_lang, " additional languages due to INT");
-    print_modifier_msg(mod_magicsave, " to magic saves due to WIS");
+        print_modifier_msg(mod_missile + mod_missile_extra, msg_prefix, " to missile attack due to DEX and class");
+    print_modifier_msg(mod_ac, msg_prefix, " to AC due to DEX", `${in_result ? '(included in AC below)' : ''}`);
+    print_modifier_msg(mod_hp, msg_prefix, " to hit dice due to CON");
+    print_modifier_msg(mod_lang, msg_prefix, " additional languages due to INT");
+    print_modifier_msg(mod_magicsave, msg_prefix, " to magic saves due to WIS");
     if (mod_xp)
-        print_modifier_msg(mod_xp, "% XP due to prime requisite");
+        print_modifier_msg(mod_xp, msg_prefix, "% XP due to prime requisite");
 };
 
 for ( ; ; ) {
@@ -177,12 +193,12 @@ for ( ; ; ) {
 
 if (chosen_class.missile_bonus) {
     mod_missile_extra = chosen_class.missile_bonus;
-    print_modifier_msg(mod_missile_extra, " to missile attack due to class");
+    print_modifier_msg(mod_missile_extra, "", " to missile attack due to class");
 }
 
 mod_xp = chosen_class.xp_mod(str, dex, con, int, wis, cha);
 if (mod_xp)
-    print_modifier_msg(mod_xp, "% XP due to prime requisite");
+    print_modifier_msg(mod_xp, "", "% XP due to prime requisite");
 
 const level_answer = await input({
     message: `Level (1-${chosen_class.max_level})`,
@@ -399,11 +415,11 @@ for ( ; ; ) {
     const ac_wo_shield = chosen_armor.ac - mod_ac; // descending AC, but modifier is like other mod_* hence the subtract
     const ac = ac_wo_shield - (has_shield ? 1 : 0);
     const print_ac = () => {
-        console.log(`${chalk.cyan('AC')} ${chalk.bold(ac)}${ac_wo_shield != ac ? ` (${chalk.bold(ac_wo_shield)} without shield)` : ''}`);
+        console.log(`${header('AC')} ${chalk.bold(ac)}${ac_wo_shield != ac ? ` (${chalk.bold(ac_wo_shield)} without shield)` : ''}`);
         if (chosen_class.ac_bonus_against_large) {
             const large_ac_wo_shield = ac_wo_shield - chosen_class.ac_bonus_against_large;
             const large_ac = large_ac_wo_shield - (has_shield ? 1 : 0);
-            console.log(`${chalk.cyan('AC')} ${chalk.bold(large_ac)} against large opponents${large_ac_wo_shield != large_ac ? ` (${chalk.bold(large_ac_wo_shield)} without shield)` : ''}`);
+            console.log(`${header('AC')} ${chalk.bold(large_ac)} against large opponents${large_ac_wo_shield != large_ac ? ` (${chalk.bold(large_ac_wo_shield)} without shield)` : ''}`);
         }
     };
 
@@ -538,11 +554,12 @@ for ( ; ; ) {
     }
 
     console.log(chalk.underline("\n\nResult\n"));
-    console.log(chalk.cyan(`Level ${level} ${chosen_class.name}`));
+    console.log(header(`Level ${level} ${chosen_class.name}`));
     print_abilities(true);
-    print_cha_msg(cha);
-    console.log(`${chalk.cyan('Max HP')} ${chalk.bold(max_hp)} (Hit dice 1d${chosen_class.hit_dice})`);
-    console.log(`${chalk.cyan('Armor')} ${chosen_armor.name}${has_shield ? ', Shield' : ''}`);
+    print_cha_msg(cha, markdown ? "- " : "");
+    console.log(`${header('XP')} ${chalk.bold(chosen_class.base_xp[level - 1])}`);
+    console.log(`${header('HP')} ${chalk.bold(max_hp)} / ${chalk.bold(max_hp)} (Hit dice 1d${chosen_class.hit_dice})`);
+    console.log(`${header('Armor')} ${chosen_armor.name}${has_shield ? ', Shield' : ''}`);
     print_ac();
     var thac0 = 19;
     for (var i in chosen_class.thac0) {
@@ -551,11 +568,11 @@ for ( ; ; ) {
             break;
         }
     }
-    console.log(`${chalk.cyan('THAC0')} ${chalk.bold(thac0)}`);
-    console.log(`${chalk.cyan('Speed')} ${chalk.bold(chosen_armor.speed)} / ${chalk.bold(chosen_armor.speed / 3)}`);
+    console.log(`${header('THAC0')} ${chalk.bold(thac0)}`);
+    console.log(`${header('Speed')} ${chalk.bold(chosen_armor.speed)} / ${chalk.bold(chosen_armor.speed / 3)}`);
     var weapons = [];
     weapon_indices.forEach((i) => { weapons.push(weapon_list[i].name); });
-    console.log(`${chalk.cyan('Weapons')} ${weapons.join(', ')}`);
+    console.log(`${header('Weapons')} ${weapons.join(', ')}`);
     if (chosen_class.spells) {
         var spells_msg = "";
         const spell_counts = chosen_class.spells[level - 1];
@@ -569,21 +586,21 @@ for ( ; ; ) {
                 spells_msg += `${i > 0 ? ', ' : ''}${count}lv${spell_level}`;
             }
         }
-        console.log(`${chalk.cyan('Spells')} (${chosen_class.divine_magic ? 'divine' : 'arcane'}) ${spells_msg}`);
+        console.log(`${header('Spells')} (${chosen_class.divine_magic ? 'divine' : 'arcane'}) ${spells_msg}`);
         if (spell_book.length > 0)
-            console.log(`${chalk.cyan('Spell book')} ${spell_book.join(', ')}`);
+            console.log(`${header('Spell book')} ${spell_book.join(', ')}`);
         if (current_cleric_spells.length > 0)
-            console.log(`${chalk.cyan('Currently memorized')} ${current_cleric_spells.join(', ')}`);
+            console.log(`${header('Currently memorized')} ${current_cleric_spells.join(', ')}`);
     }
     const saves = saving_throws_for_level(chosen_class.saves, level);
-    console.log(`${chalk.cyan('Saving throws')} D ${chalk.bold(saves[0])} W ${chalk.bold(saves[1])} P ${chalk.bold(saves[2])} ` +
+    console.log(`${header('Saving throws')} D ${chalk.bold(saves[0])} W ${chalk.bold(saves[1])} P ${chalk.bold(saves[2])} ` +
                 `B ${chalk.bold(saves[3])} S ${chalk.bold(saves[4])}`);
     const level_dep_info = chosen_class.level_dep_info ? chosen_class.level_dep_info(level) : null;
-    console.log(`${chalk.cyan('Details')} Open doors ${open_doors_chance(str)}-in-6` +
+    console.log(`${header('Details')} Open doors ${open_doors_chance(str)}-in-6` +
                 `${chosen_class.other_info ? `, ${chosen_class.other_info}` : ''}` +
                 `${level_dep_info ? `, ${level_dep_info}` : ''}`);
-    console.log(`${chalk.cyan('Alignment')} ${alignment}`);
-    console.log(`${chalk.cyan('Languages')} ${languages.join(', ')}`);
+    console.log(`${header('Alignment')} ${alignment}`);
+    console.log(`${header('Languages')} ${languages.join(', ')}`);
     var equipment_arr = [];
     equipment.forEach((thing) => {
         var str = `${thing.name}`;
@@ -597,9 +614,7 @@ for ( ; ; ) {
         equipment_arr.push(str);
     });
     if (equipment_arr.length > 0)
-        console.log(`${chalk.cyan('Equipment')} ${equipment_arr.join(', ')}`);
-    console.log(`XP ${chosen_class.base_xp[level - 1]}`);
-    console.log(`HP ${max_hp}`);
+        console.log(`${header('Equipment')} ${equipment_arr.join(', ')}`);
 
     if (auto_mode) {
         console.log('\n');
