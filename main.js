@@ -520,6 +520,17 @@ function saving_throws_for_level(saves_tab, level) {
     return [0, 0, 0, 0, 0];
 }
 
+function weapon_ok_for_class(char_class, weapon) {
+    var ok = true;
+    if (char_class.blunt_weapons_only && !weapon.blunt)
+        ok = false;
+    if (char_class.dagger_only && !weapon.dagger)
+        ok = false;
+    if (char_class.small_normal_weapons_only && !weapon.smallnormal)
+        ok = false;
+    return ok;
+}
+
 var level = 1;
 var str, dex, con, int, wis, cha;
 var mod_melee, mod_missile, mod_ac, mod_hp, mod_magicsave, mod_lang, mod_react;
@@ -667,11 +678,9 @@ if (auto_mode) {
         for (var i = 0; i < 2; ++i) {
             for ( ; ; ) {
                 const choice = weapon_list[auto_weapon_list[roll(auto_weapon_list.length, 1, 0) - 1]];
-                if (!chosen_class.blunt_weapons_only || choice.blunt) {
-                    if (!weapon_indices.includes(choice.value)) {
-                        weapon_indices.push(choice.value);
-                        break;
-                    }
+                if (weapon_ok_for_class(chosen_class, choice) && !weapon_indices.includes(choice.value)) {
+                    weapon_indices.push(choice.value);
+                    break;
                 }
             }
         }
@@ -736,12 +745,8 @@ if (auto_mode) {
 
     var weapon_select_choices = [];
     for (var i in weapon_list) {
-        const w = weapon_list[i];
-        const skip = (chosen_class.blunt_weapons_only && !w.blunt)
-            || (chosen_class.dagger_only && !w.dagger)
-            || (chosen_class.small_normal_weapons_only && !w.smallnormal);
-        if (!skip)
-            weapon_select_choices.push(w);
+        if (weapon_ok_for_class(chosen_class, weapon_list[i]))
+            weapon_select_choices.push(weapon_list[i]);
     }
     weapon_indices = await checkbox({
         message: "Select weapons",
@@ -827,9 +832,13 @@ if (chosen_class.spell_book && chosen_class.spells && chosen_class.spells[level 
         const spell_counts = chosen_class.spells[level - 1];
         for (var i = 0; i < spell_counts.length; ++i) {
             const spell_level = i + 1;
+            var indices_generated = [];
             for (var j = 0; j < spell_counts[i]; ++j) {
                 const index = roll(magicuser_spell_list[i].length, 1, 0) - 1
-                spell_book.push(`${magicuser_spell_list[i][index]} (lv${spell_level})`);
+                if (!indices_generated.includes(index)) {
+                    spell_book.push(`${magicuser_spell_list[i][index]} (lv${spell_level})`);
+                    indices_generated.push(index);
+                }
             }
         }
     } else if (await expand({
@@ -868,11 +877,14 @@ var additional_languages = [];
 if (mod_lang > 0) {
     const already_known = new Set(chosen_class.languages.split(', '));
     if (auto_mode) {
+        var generated_indices = [];
         for (var i = 0; i < mod_lang; ++i) {
             for ( ; ; ) {
-                const choice = language_list[roll(language_list.length, 1, 0) - 1];
-                if (!already_known.has(choice)) {
+                const index = roll(language_list.length, 1, 0) - 1;
+                const choice = language_list[index];
+                if (!already_known.has(choice) && !generated_indices.includes(index)) {
                     additional_languages.push(choice);
+                    generated_indices.push(index);
                     break;
                 }
             }
