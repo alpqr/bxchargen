@@ -863,11 +863,11 @@ if (needs_slingstones)
 const ac_wo_shield = chosen_armor.ac - mod_ac; // descending AC, but modifier is like other mod_* hence the subtract
 const ac = ac_wo_shield - (has_shield ? 1 : 0);
 const print_ac = () => {
-    console.log(chalk.bold(`AC ${ac}${ac_wo_shield != ac ? ` (${ac_wo_shield} without shield)` : ''}`));
+    console.log(`${chalk.cyan('AC')} ${chalk.bold(ac)}${ac_wo_shield != ac ? ` (${chalk.bold(ac_wo_shield)} without shield)` : ''}`);
     if (chosen_class.ac_bonus_against_large) {
         const large_ac_wo_shield = ac_wo_shield - chosen_class.ac_bonus_against_large;
         const large_ac = large_ac_wo_shield - (has_shield ? 1 : 0);
-        console.log(chalk.bold(`AC ${large_ac} against large opponents${large_ac_wo_shield != large_ac ? ` (${large_ac_wo_shield} without shield)` : ''}`));
+        console.log(`${chalk.cyan('AC')} ${chalk.bold(large_ac)} against large opponents${large_ac_wo_shield != large_ac ? ` (${chalk.bold(large_ac_wo_shield)} without shield)` : ''}`);
     }
 };
 
@@ -999,8 +999,8 @@ console.log(chalk.underline("\n\nResult\n"));
 console.log(chalk.cyan(`Level ${level} ${chosen_class.name}`));
 print_abilities(true);
 print_cha_msg(cha);
-console.log(chalk.bold(`Max HP ${max_hp} (Hit dice 1d${chosen_class.hit_dice})`));
-console.log(chalk.bold(`Armor ${chosen_armor.name}${has_shield ? ', Shield' : ''}`));
+console.log(`${chalk.cyan('Max HP')} ${chalk.bold(max_hp)} (Hit dice 1d${chosen_class.hit_dice})`);
+console.log(`${chalk.cyan('Armor')} ${chosen_armor.name}${has_shield ? ', Shield' : ''}`);
 print_ac();
 var thac0 = 19;
 for (var i in chosen_class.thac0) {
@@ -1009,11 +1009,11 @@ for (var i in chosen_class.thac0) {
         break;
     }
 }
-console.log(chalk.bold(`THAC0 ${thac0}`));
-console.log(chalk.bold(`Speed ${chosen_armor.speed} / ${chosen_armor.speed / 3}`));
+console.log(`${chalk.cyan('THAC0')} ${chalk.bold(thac0)}`);
+console.log(`${chalk.cyan('Speed')} ${chalk.bold(chosen_armor.speed)} / ${chalk.bold(chosen_armor.speed / 3)}`);
 var weapons = [];
 weapon_indices.forEach((i) => { weapons.push(weapon_list[i].name); });
-console.log(chalk.bold(`Weapons ${weapons.join(', ')}`));
+console.log(`${chalk.cyan('Weapons')} ${weapons.join(', ')}`);
 if (chosen_class.spells) {
     var spells_msg = "";
     const spell_counts = chosen_class.spells[level - 1];
@@ -1027,21 +1027,21 @@ if (chosen_class.spells) {
             spells_msg += `${i > 0 ? ', ' : ''}${count}lv${spell_level}`;
         }
     }
-    console.log(chalk.bold(`Spells (${chosen_class.divine_magic ? 'divine' : 'arcane'}) ${spells_msg}`));
+    console.log(`${chalk.cyan('Spells')} (${chosen_class.divine_magic ? 'divine' : 'arcane'}) ${spells_msg}`);
     if (spell_book.length > 0)
-        console.log(chalk.bold(`Spell book ${spell_book.join(', ')}`));
+        console.log(`${chalk.cyan('Spell book')} ${spell_book.join(', ')}`);
     if (current_cleric_spells.length > 0)
-        console.log(chalk.bold(`Currently memorized ${current_cleric_spells.join(', ')}`));
+        console.log(`${chalk.cyan('Currently memorized')} ${current_cleric_spells.join(', ')}`);
 }
 const saves = saving_throws_for_level(chosen_class.saves, level);
-console.log(`${chalk.bold('Saving throws')} D ${chalk.bold(saves[0])} W ${chalk.bold(saves[1])} P ${chalk.bold(saves[2])} ` +
+console.log(`${chalk.cyan('Saving throws')} D ${chalk.bold(saves[0])} W ${chalk.bold(saves[1])} P ${chalk.bold(saves[2])} ` +
             `B ${chalk.bold(saves[3])} S ${chalk.bold(saves[4])}`);
 const level_dep_info = chosen_class.level_dep_info ? chosen_class.level_dep_info(level) : null;
-console.log(`Open doors ${open_doors_chance(str)}-in-6` +
+console.log(`${chalk.cyan('Details')} Open doors ${open_doors_chance(str)}-in-6` +
             `${chosen_class.other_info ? `, ${chosen_class.other_info}` : ''}` +
             `${level_dep_info ? `, ${level_dep_info}` : ''}`);
-console.log(`Alignment ${alignment}`);
-console.log(`Languages ${languages.join(', ')}`);
+console.log(`${chalk.cyan('Alignment')} ${alignment}`);
+console.log(`${chalk.cyan('Languages')} ${languages.join(', ')}`);
 var equipment_arr = [];
 equipment.forEach((thing) => {
     var str = `${thing.name}`;
@@ -1055,6 +1055,6 @@ equipment.forEach((thing) => {
     equipment_arr.push(str);
 });
 if (equipment_arr.length > 0)
-    console.log(`Equipment ${equipment_arr.join(', ')}`);
+    console.log(`${chalk.cyan('Equipment')} ${equipment_arr.join(', ')}`);
 console.log(`XP ${chosen_class.base_xp[level - 1]}`);
 console.log(`HP ${max_hp}`);
