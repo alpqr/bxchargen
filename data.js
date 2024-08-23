@@ -430,7 +430,7 @@ const magicuser_spell_list = [
         'Invisibility',
         'Knock',
         'Levitate',
-        'Location object',
+        'Locate object',
         'Mirror image',
         'Phantasmal force',
         'Web',
