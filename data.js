@@ -310,18 +310,18 @@ const language_list = [
 const weapon_list = [
     { value: 0, name: 'Battle axe (slow, 2-h, 1d8)', smallnormal: true },
     { value: 1, name: 'Club (1d4)', blunt: true, smallnormal: true },
-    { value: 2, name: 'Crossbow (slow, reload, 2-h, 1d6, 80/160/240)', smallnormal: true, needs_bolts: true },
+    { value: 2, name: 'Crossbow (slow, reload, 2-h, 1d6, 80/160/240)', smallnormal: true, needs_bolts: true, missile_only: true },
     { value: 3, name: 'Dagger (1d4, 10/20/30 as missile)', dagger: true, smallnormal: true },
     { value: 4, name: 'Hand axe (1d6, 10/20/30 as missile)', smallnormal: true },
-    { value: 5, name: 'Javelin (1d4, 30/60/90)', smallnormal: true },
+    { value: 5, name: 'Javelin (1d4, 30/60/90)', smallnormal: true, missile_only: true },
     { value: 6, name: 'Lance (charge, 1d6)' },
-    { value: 7, name: 'Longbow (2-h, 1d6, 70/140/210)', needs_arrows: true },
+    { value: 7, name: 'Longbow (2-h, 1d6, 70/140/210)', needs_arrows: true, missile_only: true },
     { value: 8, name: 'Mace (1d6)', blunt: true, smallnormal: true },
     { value: 9, name: 'Polearm (brace, slow, 2-h, 1d10)' },
-    { value: 10, name: 'Shortbow (2-h, 1d6, 50/100/150)', smallnormal: true, needs_arrows: true },
+    { value: 10, name: 'Shortbow (2-h, 1d6, 50/100/150)', smallnormal: true, needs_arrows: true, missile_only: true },
     { value: 11, name: 'Shortsword (1d6)', smallnormal: true },
     { value: 12, name: 'Silver dagger (1d4, 10/20/30 as missile)', dagger: true, smallnormal: true },
-    { value: 13, name: 'Sling (1d4, 40/80/160)', blunt: true, smallnormal: true, needs_slingstones: true },
+    { value: 13, name: 'Sling (1d4, 40/80/160)', blunt: true, smallnormal: true, needs_slingstones: true, missile_only: true },
     { value: 14, name: 'Spear (brace, 1d6, 20/40/60 as missile)' },
     { value: 15, name: 'Staff (slow, 2-h, 1d4)', blunt: true },
     { value: 16, name: 'Sword (1d8)', smallnormal: true },
@@ -331,7 +331,7 @@ const weapon_list = [
 ];
 
 const auto_weapon_list = [
-    0, 1, 2, 3, 4, 7, 8, 10, 11, 13, 14, 16, 18, 19
+    0, 1, 2, 3, 3, 4, 7, 7, 8, 8, 10, 10, 11, 13, 13, 14, 16, 16, 18, 19
 ];
 
 const armor_list = [

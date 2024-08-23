@@ -200,391 +200,421 @@ const auto_mode = await expand({
     ]
 });
 
-var max_hp;
 for ( ; ; ) {
-    max_hp = 0;
-    for (var level_hd = 0; level_hd < level; ++level_hd) {
-        if (level_hd <= 8) {
-            max_hp += Math.max(1, roll(chosen_class.hit_dice, 1, mod_hp));
-        } else {
-            // CON no longer applies from level 10
-            max_hp += chosen_class.post_level_9_hd[level_hd - 9];
+    var max_hp;
+    for ( ; ; ) {
+        max_hp = 0;
+        for (var level_hd = 0; level_hd < level; ++level_hd) {
+            if (level_hd <= 8) {
+                max_hp += Math.max(1, roll(chosen_class.hit_dice, 1, mod_hp));
+            } else {
+                // CON no longer applies from level 10
+                max_hp += chosen_class.post_level_9_hd[level_hd - 9];
+            }
         }
-    }
-    if (auto_mode) {
-        break;
-    } else {
-        console.log(chalk.bold(`Max HP ${max_hp} (Hit dice 1d${chosen_class.hit_dice})`));
-        const hp_ok = await expand({
-            message: "Accept HP?",
-            default: 'y',
-            choices: [
-                { key: "y", name: "Yes", value: true },
-                { key: "n", name: "No (re-roll)", value: false }
-            ]
-        });
-        if (hp_ok)
+        if (auto_mode) {
             break;
-    }
-};
+        } else {
+            console.log(chalk.bold(`Max HP ${max_hp} (Hit dice 1d${chosen_class.hit_dice})`));
+            const hp_ok = await expand({
+                message: "Accept HP?",
+                default: 'y',
+                choices: [
+                    { key: "y", name: "Yes", value: true },
+                    { key: "n", name: "No (re-roll)", value: false }
+                ]
+            });
+            if (hp_ok)
+                break;
+        }
+    };
 
-var chosen_armor = armor_list[0]; // None
-var has_shield = false;
-var equipment = [];
-var weapon_indices = [];
+    var chosen_armor = armor_list[0]; // None
+    var has_shield = false;
+    var equipment = [];
+    var weapon_indices = [];
 
-if (auto_mode) {
-    if (chosen_class.autoequip.armor.index !== undefined) {
-        chosen_armor = armor_list[chosen_class.autoequip.armor.index];
-    } else if (chosen_class.autoequip.armor.roll) {
-        const a = auto_armor_list[roll(auto_armor_list.length, 1, 0) - 1];
-        chosen_armor = armor_list[a.index];
-        if (a.shield)
-            has_shield = true;
-    }
+    if (auto_mode) {
+        if (chosen_class.autoequip.armor.index !== undefined) {
+            chosen_armor = armor_list[chosen_class.autoequip.armor.index];
+        } else if (chosen_class.autoequip.armor.roll) {
+            const a = auto_armor_list[roll(auto_armor_list.length, 1, 0) - 1];
+            chosen_armor = armor_list[a.index];
+            if (a.shield)
+                has_shield = true;
+        }
 
-    if (chosen_class.autoequip.weapons.indices !== undefined) {
-        weapon_indices = chosen_class.autoequip.weapons.indices;
-    } else {
-        for (var i = 0; i < 2; ++i) {
-            for ( ; ; ) {
-                const choice = weapon_list[auto_weapon_list[roll(auto_weapon_list.length, 1, 0) - 1]];
-                if (weapon_ok_for_class(chosen_class, choice) && !weapon_indices.includes(choice.value)) {
-                    weapon_indices.push(choice.value);
-                    break;
+        if (chosen_class.autoequip.weapons.indices !== undefined) {
+            weapon_indices = chosen_class.autoequip.weapons.indices;
+        } else {
+            for (var i = 0; i < 2; ++i) {
+                for ( ; ; ) {
+                    const choice = weapon_list[auto_weapon_list[roll(auto_weapon_list.length, 1, 0) - 1]];
+                    if (weapon_ok_for_class(chosen_class, choice) && !weapon_indices.includes(choice.value)) {
+                        var add = true;
+                        const this_missile_only = weapon_list[choice.value].missile_only;
+                        for (var j = 0; j < weapon_indices.length; ++j) {
+                            const missile_only = weapon_list[weapon_indices[j]].missile_only;
+                            if (missile_only && this_missile_only) {
+                                add = false;
+                                break;
+                            }
+                        }
+                        if (add) {
+                            weapon_indices.push(choice.value);
+                            break;
+                        }
+                    }
                 }
             }
         }
-    }
 
-    equipment.push({ name: 'Backpack', count: 1 });
-    equipment.push({ name: 'Torch', count: roll(6, 1, 0) });
-    equipment.push({ name: 'Tinderbox', count: 1 });
-    equipment.push({ name: 'Waterskin', count: 1 });
-    equipment.push({ name: 'Ration', count: roll(6, 1, 0) });
-    equipment.push({ name: 'gp', count: roll(6, 1, 0) + roll(6, 1, 0) + roll(6, 1, 0) });
+        equipment.push({ name: 'Backpack', count: 1 });
+        equipment.push({ name: 'Torch', count: roll(6, 1, 0) });
+        equipment.push({ name: 'Tinderbox', count: 1 });
+        equipment.push({ name: 'Waterskin', count: 1 });
+        equipment.push({ name: 'Ration', count: roll(6, 1, 0) });
+        equipment.push({ name: 'gp', count: roll(6, 1, 0) + roll(6, 1, 0) + roll(6, 1, 0) });
 
-    for (var i = 0; i < 2; ++i) {
-        var something_added = false;
-        for ( ; ; ) {
-            const choice = auto_equipment_extra_list[roll(auto_equipment_extra_list.length, 1, 0) - 1];
-            for (var c in choice) {
-                const thing = choice[c];
-                const eqIdx = equipment.findIndex((element) => element.name == thing.name);
-                if (eqIdx < 0) {
-                    equipment.push(choice[c]);
-                    something_added = true;
+        for (var i = 0; i < 2; ++i) {
+            var something_added = false;
+            for ( ; ; ) {
+                const choice = auto_equipment_extra_list[roll(auto_equipment_extra_list.length, 1, 0) - 1];
+                for (var c in choice) {
+                    const thing = choice[c];
+                    const eqIdx = equipment.findIndex((element) => element.name == thing.name);
+                    if (eqIdx < 0) {
+                        equipment.push(choice[c]);
+                        something_added = true;
+                    }
                 }
+                if (something_added)
+                    break;
             }
-            if (something_added)
+        }
+    } else {
+        var armor_choices = [];
+        for (var i in armor_list) {
+            var skip = i > 0;
+            if (chosen_class.armor_allowed) {
+                if (i == 1 || !chosen_class.leather_armor_only)
+                    skip = false;
+            }
+            if (skip)
+                console.log(chalk.dim(`Skipping ${armor_list[i].name} due to not meeting requirements`));
+            else
+                armor_choices.push({ name: armor_list[i].name, value: i });
+        }
+        if (chosen_class.armor_allowed) {
+            const armor_answer = await select({
+                message: "Select armor",
+                choices: armor_choices
+            });
+            chosen_armor = armor_list[armor_answer];
+        }
+
+        if (chosen_class.shield_allowed) {
+            has_shield = await expand({
+                message: "Shield?",
+                default: 'y',
+                choices: [
+                    { key: "y", name: "Yes", value: true },
+                    { key: "n", name: "No", value: false }
+                ]
+            });
+        } else {
+            console.log(chalk.dim("No shield allowed"));
+        }
+
+        var weapon_select_choices = [];
+        for (var i in weapon_list) {
+            if (weapon_ok_for_class(chosen_class, weapon_list[i]))
+                weapon_select_choices.push(weapon_list[i]);
+        }
+        weapon_indices = await checkbox({
+            message: "Select weapons",
+            choices: weapon_select_choices,
+            pageSize: 12,
+            loop: false,
+            validate: (choices) => {
+                if (choices.length > 0)
+                    return true;
+                return 'Select at least one weapon';
+            }
+        });
+
+        for ( ; ; ) {
+            var equipment_choices = [];
+            equipment_choices.push({ name: "Done", value: -2 });
+            equipment_choices.push({ name: "Reset", value: -1 });
+            equipment_choices.push(new Separator());
+            for (var i in equipment_list) {
+                const thing = equipment_list[i];
+                const str = `${thing.name}${thing.unit > 1 ? ' (' + thing.unit + ')' : ''}`;
+                equipment_choices.push({ name: str , value: i });
+            }
+            const idx = await select({
+                message: "Add more equipment",
+                choices: equipment_choices,
+                pageSize: 12,
+                loop: false
+            });
+            if (idx >= 0) {
+                const thing = equipment_list[idx];
+                const eqIdx = equipment.findIndex((element) => element.name == thing.name);
+                if (eqIdx >= 0)
+                    equipment[eqIdx].count += 1;
+                else
+                    equipment.push({ name: thing.name, count: 1, unit: thing.unit, unit_str: thing.unit_str });
+            } else if (idx == -1)
+                equipment = [];
+            else
                 break;
         }
     }
-} else {
-    var armor_choices = [];
-    for (var i in armor_list) {
-        var skip = i > 0;
-        if (chosen_class.armor_allowed) {
-            if (i == 1 || !chosen_class.leather_armor_only)
-                skip = false;
-        }
-        if (skip)
-            console.log(chalk.dim(`Skipping ${armor_list[i].name} due to not meeting requirements`));
-        else
-            armor_choices.push({ name: armor_list[i].name, value: i });
-    }
-    if (chosen_class.armor_allowed) {
-        const armor_answer = await select({
-            message: "Select armor",
-            choices: armor_choices
-        });
-        chosen_armor = armor_list[armor_answer];
-    }
 
-    if (chosen_class.shield_allowed) {
-        has_shield = await expand({
-            message: "Shield?",
+    if (chosen_class.divine_magic)
+        equipment.push({ name: 'Holy symbol', count: 1 });
+    if (chosen_class.thieves_tools)
+        equipment.push({ name: "Thieves' tools", count: 1 });
+
+    var needs_arrows = false, needs_bolts = false, needs_slingstones = false;
+    weapon_indices.forEach((i) => {
+        const w = weapon_list[i];
+        if (w.needs_arrows)
+            needs_arrows = true;
+        if (w.needs_bolts)
+            needs_bolts = true;
+        if (w.needs_slingstones)
+            needs_slingstones = true;
+    });
+
+    if (needs_arrows)
+        equipment.push({ name: 'Arrow', count: 1, unit: 20});
+    if (needs_bolts)
+        equipment.push({ name: 'Crossbow bolt', count: 1, unit: 30});
+    if (needs_slingstones)
+        equipment.push({ name: 'Sling stones', count: 1 });
+
+    const ac_wo_shield = chosen_armor.ac - mod_ac; // descending AC, but modifier is like other mod_* hence the subtract
+    const ac = ac_wo_shield - (has_shield ? 1 : 0);
+    const print_ac = () => {
+        console.log(`${chalk.cyan('AC')} ${chalk.bold(ac)}${ac_wo_shield != ac ? ` (${chalk.bold(ac_wo_shield)} without shield)` : ''}`);
+        if (chosen_class.ac_bonus_against_large) {
+            const large_ac_wo_shield = ac_wo_shield - chosen_class.ac_bonus_against_large;
+            const large_ac = large_ac_wo_shield - (has_shield ? 1 : 0);
+            console.log(`${chalk.cyan('AC')} ${chalk.bold(large_ac)} against large opponents${large_ac_wo_shield != large_ac ? ` (${chalk.bold(large_ac_wo_shield)} without shield)` : ''}`);
+        }
+    };
+
+    var spell_book = [];
+    if (chosen_class.has_spell_book && chosen_class.spells && chosen_class.spells[level - 1].length > 0) {
+        if (auto_mode) {
+            spell_book.push(chalk.dim("Read magic (lv1)"));
+            const spell_counts = chosen_class.spells[level - 1];
+            for (var i = 0; i < spell_counts.length; ++i) {
+                const spell_level = i + 1;
+                var indices_generated = [];
+                for (var j = 0; j < spell_counts[i]; ++j) {
+                    for ( ; ; ) {
+                        const index = roll(magicuser_spell_list[i].length, 1, 0) - 1;
+                        if (!indices_generated.includes(index)) {
+                            spell_book.push(`${magicuser_spell_list[i][index]} (lv${spell_level})`);
+                            indices_generated.push(index);
+                            break;
+                        }
+                    }
+                }
+            }
+        } else if (await expand({
+            message: "Define spell book?",
             default: 'y',
             choices: [
                 { key: "y", name: "Yes", value: true },
                 { key: "n", name: "No", value: false }
             ]
-        });
-    } else {
-        console.log(chalk.dim("No shield allowed"));
-    }
-
-    var weapon_select_choices = [];
-    for (var i in weapon_list) {
-        if (weapon_ok_for_class(chosen_class, weapon_list[i]))
-            weapon_select_choices.push(weapon_list[i]);
-    }
-    weapon_indices = await checkbox({
-        message: "Select weapons",
-        choices: weapon_select_choices,
-        pageSize: 12,
-        loop: false,
-        validate: (choices) => {
-            if (choices.length > 0)
-                return true;
-            return 'Select at least one weapon';
+        })) {
+            spell_book.push(chalk.dim("Read magic (lv1)"));
+            const spell_counts = chosen_class.spells[level - 1];
+            for (var i = 0; i < spell_counts.length; ++i) {
+                const spell_level = i + 1;
+                const count = spell_counts[i];
+                var spell_choices = [];
+                for (var s of magicuser_spell_list[i])
+                    spell_choices.push({ value: s });
+                const choices = await checkbox({
+                    message: `Choose ${count} from level ${spell_level} spells`,
+                    choices: spell_choices,
+                    pageSize: 12,
+                    loop: false,
+                    validate: (choices) => {
+                        if (choices.length === count)
+                            return true;
+                        return `Choose ${count} spells`;
+                    }
+                });
+                for (var s of choices)
+                    spell_book.push(`${s} (lv${spell_level})`);
+            }
         }
-    });
-
-    for ( ; ; ) {
-        var equipment_choices = [];
-        equipment_choices.push({ name: "Done", value: -2 });
-        equipment_choices.push({ name: "Reset", value: -1 });
-        equipment_choices.push(new Separator());
-        for (var i in equipment_list) {
-            const thing = equipment_list[i];
-            const str = `${thing.name}${thing.unit > 1 ? ' (' + thing.unit + ')' : ''}`;
-            equipment_choices.push({ name: str , value: i });
-        }
-        const idx = await select({
-            message: "Add more equipment",
-            choices: equipment_choices,
-            pageSize: 12,
-            loop: false
-        });
-        if (idx >= 0) {
-            const thing = equipment_list[idx];
-            const eqIdx = equipment.findIndex((element) => element.name == thing.name);
-            if (eqIdx >= 0)
-                equipment[eqIdx].count += 1;
-            else
-                equipment.push({ name: thing.name, count: 1, unit: thing.unit, unit_str: thing.unit_str });
-        } else if (idx == -1)
-            equipment = [];
-        else
-            break;
     }
-}
 
-if (chosen_class.divine_magic)
-    equipment.push({ name: 'Holy symbol', count: 1 });
-if (chosen_class.thieves_tools)
-    equipment.push({ name: "Thieves' tools", count: 1 });
-
-var needs_arrows = false, needs_bolts = false, needs_slingstones = false;
-weapon_indices.forEach((i) => {
-    const w = weapon_list[i];
-    if (w.needs_arrows)
-        needs_arrows = true;
-    if (w.needs_bolts)
-        needs_bolts = true;
-    if (w.needs_slingstones)
-        needs_slingstones = true;
-});
-
-if (needs_arrows)
-    equipment.push({ name: 'Arrow', count: 1, unit: 20});
-if (needs_bolts)
-    equipment.push({ name: 'Crossbow bolt', count: 1, unit: 30});
-if (needs_slingstones)
-    equipment.push({ name: 'Sling stones', count: 1 });
-
-const ac_wo_shield = chosen_armor.ac - mod_ac; // descending AC, but modifier is like other mod_* hence the subtract
-const ac = ac_wo_shield - (has_shield ? 1 : 0);
-const print_ac = () => {
-    console.log(`${chalk.cyan('AC')} ${chalk.bold(ac)}${ac_wo_shield != ac ? ` (${chalk.bold(ac_wo_shield)} without shield)` : ''}`);
-    if (chosen_class.ac_bonus_against_large) {
-        const large_ac_wo_shield = ac_wo_shield - chosen_class.ac_bonus_against_large;
-        const large_ac = large_ac_wo_shield - (has_shield ? 1 : 0);
-        console.log(`${chalk.cyan('AC')} ${chalk.bold(large_ac)} against large opponents${large_ac_wo_shield != large_ac ? ` (${chalk.bold(large_ac_wo_shield)} without shield)` : ''}`);
-    }
-};
-
-var spell_book = [];
-if (chosen_class.has_spell_book && chosen_class.spells && chosen_class.spells[level - 1].length > 0) {
-    if (auto_mode) {
-        spell_book.push(chalk.dim("Read magic (lv1)"));
-        const spell_counts = chosen_class.spells[level - 1];
-        for (var i = 0; i < spell_counts.length; ++i) {
-            const spell_level = i + 1;
-            var indices_generated = [];
-            for (var j = 0; j < spell_counts[i]; ++j) {
-                for ( ; ; ) {
-                    const index = roll(magicuser_spell_list[i].length, 1, 0) - 1;
-                    if (!indices_generated.includes(index)) {
-                        spell_book.push(`${magicuser_spell_list[i][index]} (lv${spell_level})`);
-                        indices_generated.push(index);
-                        break;
+    var current_cleric_spells = [];
+    if (chosen_class.divine_magic && chosen_class.spells && chosen_class.spells[level - 1].length > 0) {
+        if (auto_mode) {
+            const spell_counts = chosen_class.spells[level - 1];
+            for (var i = 0; i < spell_counts.length; ++i) {
+                const spell_level = i + 1;
+                const fixed_spells = chosen_class.autoequip.fixed_spell_indices ? chosen_class.autoequip.fixed_spell_indices(level) : [];
+                if (fixed_spells.length > 0) {
+                    for (var j = 0; j < fixed_spells.length; ++j)
+                        current_cleric_spells.push(`${cleric_spell_list[i][fixed_spells[j]]} (lv${spell_level})`);
+                    continue;
+                }
+                var indices_generated = [];
+                for (var j = 0; j < spell_counts[i]; ++j) {
+                    for ( ; ; ) {
+                        const index = roll(cleric_spell_list[i].length, 1, 0) - 1;
+                        if (!indices_generated.includes(index)) {
+                            current_cleric_spells.push(`${cleric_spell_list[i][index]} (lv${spell_level})`);
+                            indices_generated.push(index);
+                            break;
+                        }
                     }
                 }
             }
         }
-    } else if (await expand({
-        message: "Define spell book?",
-        default: 'y',
-        choices: [
-            { key: "y", name: "Yes", value: true },
-            { key: "n", name: "No", value: false }
-        ]
-    })) {
-        spell_book.push(chalk.dim("Read magic (lv1)"));
-        const spell_counts = chosen_class.spells[level - 1];
-        for (var i = 0; i < spell_counts.length; ++i) {
-            const spell_level = i + 1;
-            const count = spell_counts[i];
-            var spell_choices = [];
-            for (var s of magicuser_spell_list[i])
-                spell_choices.push({ value: s });
-            const choices = await checkbox({
-                message: `Choose ${count} from level ${spell_level} spells`,
-                choices: spell_choices,
+    }
+
+    var additional_languages = [];
+    if (mod_lang > 0) {
+        const already_known = new Set(chosen_class.languages.split(', '));
+        if (auto_mode) {
+            var generated_indices = [];
+            for (var i = 0; i < mod_lang; ++i) {
+                for ( ; ; ) {
+                    const index = roll(language_list.length, 1, 0) - 1;
+                    const choice = language_list[index];
+                    if (!already_known.has(choice) && !generated_indices.includes(index)) {
+                        additional_languages.push(choice);
+                        generated_indices.push(index);
+                        break;
+                    }
+                }
+            }
+        } else {
+            const lang_msg = `Choose ${mod_lang} additional language${mod_lang > 1 ? 's' : ''}`;
+            var language_select_choices = [];
+            language_list.forEach((lang) => language_select_choices.push(
+                { value: lang, disabled: already_known.has(lang) }));
+            additional_languages = await checkbox({
+                message: lang_msg,
+                choices: language_select_choices,
                 pageSize: 12,
                 loop: false,
                 validate: (choices) => {
-                    if (choices.length === count)
+                    if (choices.length === mod_lang)
                         return true;
-                    return `Choose ${count} spells`;
+                    return lang_msg;
                 }
             });
-            for (var s of choices)
-                spell_book.push(`${s} (lv${spell_level})`);
         }
     }
-}
+    var languages_set = new Set(chosen_class.languages.split(', '));
+    additional_languages.forEach((lang) => languages_set.add(lang));
+    const languages = [...languages_set.values()];
 
-var current_cleric_spells = [];
-if (chosen_class.divine_magic && chosen_class.spells && chosen_class.spells[level - 1].length > 0) {
+    const alignment_list = [ "Lawful", "Neutral", "Chaotic" ];
+    var alignment;
     if (auto_mode) {
-        const spell_counts = chosen_class.spells[level - 1];
-        for (var i = 0; i < spell_counts.length; ++i) {
-            const spell_level = i + 1;
-            const fixed_spells = chosen_class.autoequip.fixed_spell_indices ? chosen_class.autoequip.fixed_spell_indices(level) : [];
-            if (fixed_spells.length > 0) {
-                for (var j = 0; j < fixed_spells.length; ++j)
-                    current_cleric_spells.push(`${cleric_spell_list[i][fixed_spells[j]]} (lv${spell_level})`);
-                continue;
-            }
-            var indices_generated = [];
-            for (var j = 0; j < spell_counts[i]; ++j) {
-                for ( ; ; ) {
-                    const index = roll(cleric_spell_list[i].length, 1, 0) - 1;
-                    if (!indices_generated.includes(index)) {
-                        current_cleric_spells.push(`${cleric_spell_list[i][index]} (lv${spell_level})`);
-                        indices_generated.push(index);
-                        break;
-                    }
-                }
-            }
-        }
-    }
-}
-
-var additional_languages = [];
-if (mod_lang > 0) {
-    const already_known = new Set(chosen_class.languages.split(', '));
-    if (auto_mode) {
-        var generated_indices = [];
-        for (var i = 0; i < mod_lang; ++i) {
-            for ( ; ; ) {
-                const index = roll(language_list.length, 1, 0) - 1;
-                const choice = language_list[index];
-                if (!already_known.has(choice) && !generated_indices.includes(index)) {
-                    additional_languages.push(choice);
-                    generated_indices.push(index);
-                    break;
-                }
-            }
-        }
+        alignment = alignment_list[roll(3, 1, 0) - 1];
     } else {
-        const lang_msg = `Choose ${mod_lang} additional language${mod_lang > 1 ? 's' : ''}`;
-        var language_select_choices = [];
-        language_list.forEach((lang) => language_select_choices.push(
-            { value: lang, disabled: already_known.has(lang) }));
-        additional_languages = await checkbox({
-            message: lang_msg,
-            choices: language_select_choices,
-            pageSize: 12,
-            loop: false,
-            validate: (choices) => {
-                if (choices.length === mod_lang)
-                    return true;
-                return lang_msg;
-            }
+        alignment = await select({
+            message: "Select alignment",
+            choices: [
+                { value: alignment_list[0] }, { value: alignment_list[1] }, { value: alignment_list[2] }
+            ]
         });
     }
-}
-var languages_set = new Set(chosen_class.languages.split(', '));
-additional_languages.forEach((lang) => languages_set.add(lang));
-const languages = [...languages_set.values()];
 
-const alignment_list = [ "Lawful", "Neutral", "Chaotic" ];
-var alignment;
-if (auto_mode) {
-    alignment = alignment_list[roll(3, 1, 0) - 1];
-} else {
-    alignment = await select({
-        message: "Select alignment",
-        choices: [
-            { value: alignment_list[0] }, { value: alignment_list[1] }, { value: alignment_list[2] }
-        ]
+    console.log(chalk.underline("\n\nResult\n"));
+    console.log(chalk.cyan(`Level ${level} ${chosen_class.name}`));
+    print_abilities(true);
+    print_cha_msg(cha);
+    console.log(`${chalk.cyan('Max HP')} ${chalk.bold(max_hp)} (Hit dice 1d${chosen_class.hit_dice})`);
+    console.log(`${chalk.cyan('Armor')} ${chosen_armor.name}${has_shield ? ', Shield' : ''}`);
+    print_ac();
+    var thac0 = 19;
+    for (var i in chosen_class.thac0) {
+        if (level <= chosen_class.thac0[i].level) {
+            thac0 = chosen_class.thac0[i].value;
+            break;
+        }
+    }
+    console.log(`${chalk.cyan('THAC0')} ${chalk.bold(thac0)}`);
+    console.log(`${chalk.cyan('Speed')} ${chalk.bold(chosen_armor.speed)} / ${chalk.bold(chosen_armor.speed / 3)}`);
+    var weapons = [];
+    weapon_indices.forEach((i) => { weapons.push(weapon_list[i].name); });
+    console.log(`${chalk.cyan('Weapons')} ${weapons.join(', ')}`);
+    if (chosen_class.spells) {
+        var spells_msg = "";
+        const spell_counts = chosen_class.spells[level - 1];
+        const len = spell_counts.length;
+        if (len == 0) {
+            spells_msg += "None";
+        } else {
+            for (var i = 0; i < len; ++i) {
+                const spell_level = i + 1;
+                const count = spell_counts[i];
+                spells_msg += `${i > 0 ? ', ' : ''}${count}lv${spell_level}`;
+            }
+        }
+        console.log(`${chalk.cyan('Spells')} (${chosen_class.divine_magic ? 'divine' : 'arcane'}) ${spells_msg}`);
+        if (spell_book.length > 0)
+            console.log(`${chalk.cyan('Spell book')} ${spell_book.join(', ')}`);
+        if (current_cleric_spells.length > 0)
+            console.log(`${chalk.cyan('Currently memorized')} ${current_cleric_spells.join(', ')}`);
+    }
+    const saves = saving_throws_for_level(chosen_class.saves, level);
+    console.log(`${chalk.cyan('Saving throws')} D ${chalk.bold(saves[0])} W ${chalk.bold(saves[1])} P ${chalk.bold(saves[2])} ` +
+                `B ${chalk.bold(saves[3])} S ${chalk.bold(saves[4])}`);
+    const level_dep_info = chosen_class.level_dep_info ? chosen_class.level_dep_info(level) : null;
+    console.log(`${chalk.cyan('Details')} Open doors ${open_doors_chance(str)}-in-6` +
+                `${chosen_class.other_info ? `, ${chosen_class.other_info}` : ''}` +
+                `${level_dep_info ? `, ${level_dep_info}` : ''}`);
+    console.log(`${chalk.cyan('Alignment')} ${alignment}`);
+    console.log(`${chalk.cyan('Languages')} ${languages.join(', ')}`);
+    var equipment_arr = [];
+    equipment.forEach((thing) => {
+        var str = `${thing.name}`;
+        const count = thing.unit !== undefined ? thing.count * thing.unit : thing.count;
+        if (count > 1) {
+            str += ` (${count}`;
+            if (thing.unit_str)
+                str += ` ${thing.unit_str}`;
+            str += ')';
+        }
+        equipment_arr.push(str);
     });
-}
+    if (equipment_arr.length > 0)
+        console.log(`${chalk.cyan('Equipment')} ${equipment_arr.join(', ')}`);
+    console.log(`XP ${chosen_class.base_xp[level - 1]}`);
+    console.log(`HP ${max_hp}`);
 
-console.log(chalk.underline("\n\nResult\n"));
-console.log(chalk.cyan(`Level ${level} ${chosen_class.name}`));
-print_abilities(true);
-print_cha_msg(cha);
-console.log(`${chalk.cyan('Max HP')} ${chalk.bold(max_hp)} (Hit dice 1d${chosen_class.hit_dice})`);
-console.log(`${chalk.cyan('Armor')} ${chosen_armor.name}${has_shield ? ', Shield' : ''}`);
-print_ac();
-var thac0 = 19;
-for (var i in chosen_class.thac0) {
-    if (level <= chosen_class.thac0[i].level) {
-        thac0 = chosen_class.thac0[i].value;
+    if (auto_mode) {
+        console.log('\n');
+        const repeat = await expand({
+            message: "Re-generate?",
+            default: 'y',
+            choices: [
+                { key: "y", name: "Yes", value: true },
+                { key: "n", name: "No (quit)", value: false },
+                { key: "q", name: "Quit", value: false }
+            ]
+        });
+        if (!repeat)
+            break;
+    } else {
         break;
     }
 }
-console.log(`${chalk.cyan('THAC0')} ${chalk.bold(thac0)}`);
-console.log(`${chalk.cyan('Speed')} ${chalk.bold(chosen_armor.speed)} / ${chalk.bold(chosen_armor.speed / 3)}`);
-var weapons = [];
-weapon_indices.forEach((i) => { weapons.push(weapon_list[i].name); });
-console.log(`${chalk.cyan('Weapons')} ${weapons.join(', ')}`);
-if (chosen_class.spells) {
-    var spells_msg = "";
-    const spell_counts = chosen_class.spells[level - 1];
-    const len = spell_counts.length;
-    if (len == 0) {
-        spells_msg += "None";
-    } else {
-        for (var i = 0; i < len; ++i) {
-            const spell_level = i + 1;
-            const count = spell_counts[i];
-            spells_msg += `${i > 0 ? ', ' : ''}${count}lv${spell_level}`;
-        }
-    }
-    console.log(`${chalk.cyan('Spells')} (${chosen_class.divine_magic ? 'divine' : 'arcane'}) ${spells_msg}`);
-    if (spell_book.length > 0)
-        console.log(`${chalk.cyan('Spell book')} ${spell_book.join(', ')}`);
-    if (current_cleric_spells.length > 0)
-        console.log(`${chalk.cyan('Currently memorized')} ${current_cleric_spells.join(', ')}`);
-}
-const saves = saving_throws_for_level(chosen_class.saves, level);
-console.log(`${chalk.cyan('Saving throws')} D ${chalk.bold(saves[0])} W ${chalk.bold(saves[1])} P ${chalk.bold(saves[2])} ` +
-            `B ${chalk.bold(saves[3])} S ${chalk.bold(saves[4])}`);
-const level_dep_info = chosen_class.level_dep_info ? chosen_class.level_dep_info(level) : null;
-console.log(`${chalk.cyan('Details')} Open doors ${open_doors_chance(str)}-in-6` +
-            `${chosen_class.other_info ? `, ${chosen_class.other_info}` : ''}` +
-            `${level_dep_info ? `, ${level_dep_info}` : ''}`);
-console.log(`${chalk.cyan('Alignment')} ${alignment}`);
-console.log(`${chalk.cyan('Languages')} ${languages.join(', ')}`);
-var equipment_arr = [];
-equipment.forEach((thing) => {
-    var str = `${thing.name}`;
-    const count = thing.unit !== undefined ? thing.count * thing.unit : thing.count;
-    if (count > 1) {
-        str += ` (${count}`;
-        if (thing.unit_str)
-            str += ` ${thing.unit_str}`;
-        str += ')';
-    }
-    equipment_arr.push(str);
-});
-if (equipment_arr.length > 0)
-    console.log(`${chalk.cyan('Equipment')} ${equipment_arr.join(', ')}`);
-console.log(`XP ${chosen_class.base_xp[level - 1]}`);
-console.log(`HP ${max_hp}`);
