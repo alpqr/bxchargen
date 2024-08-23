@@ -74,7 +74,7 @@ const classes = [
             [2, 2, 1], [2, 2, 2], [3, 2, 2, 1], [3, 3, 2, 2],
             [3, 3, 3, 2, 1], [3, 3, 3, 3, 2]
         ],
-        spell_book: true,
+        has_spell_book: true,
         max_level: 10,
         post_level_9_hd: [2],
         thac0: [ { level: 3, value: 19 }, { level: 6, value: 17 }, { level: 9, value: 14 }, { level: 10, value: 12 } ],
@@ -153,7 +153,7 @@ const classes = [
             [3, 3, 3, 2, 1], [3, 3, 3, 3, 2], [4, 3, 3, 3, 2, 1], [4, 4, 3, 3, 3, 2],
             [4, 4, 4, 3, 3, 3], [4, 4, 4, 4, 3, 3]
         ],
-        spell_book: true,
+        has_spell_book: true,
         max_level: 14,
         post_level_9_hd: [1, 2, 3, 4, 5],
         thac0: [ { level: 5, value: 19 }, { level: 10, value: 17 }, { level: 14, value: 14 } ],
@@ -325,7 +325,7 @@ const magicuser_spell_list = [
         'Detect magic',
         'Floating disc',
         'Hold portal',
-        'Light',
+        'Light / Darkness',
         'Magic missile',
         'Protection from evil',
         'Read languages',
@@ -335,7 +335,7 @@ const magicuser_spell_list = [
         'Ventriloquism'
     ],
     [
-        'Continual light',
+        'Continual light / Continual darkness',
         'Detect evil',
         'Detect invisible',
         'ESP',
@@ -371,7 +371,7 @@ const magicuser_spell_list = [
         'Massmorph',
         'Polymorph others',
         'Polymorph self',
-        'Remove curse',
+        'Remove curse / Curse',
         'Wall of fire',
         'Wall of ice',
         'Wizard eye'
@@ -387,7 +387,7 @@ const magicuser_spell_list = [
         'Pass-wall',
         'Telekinesis',
         'Teleport',
-        'Transmute rock to mud',
+        'Transmute rock to mud / Mud to rock',
         'Wall of stone'
     ],
     [
@@ -395,14 +395,61 @@ const magicuser_spell_list = [
         'Control weather',
         'Death spell',
         'Disintegrate',
-        'Geas',
+        'Geas / Remove geas',
         'Invisible stalker',
         'Lower water',
         'Move earth',
         'Part water',
         'Projected image',
         'Reincarnation',
-        'Stone to flesh'
+        'Stone to flesh / Flesh to stone'
+    ]
+];
+
+const cleric_spell_list = [
+    [
+        'Cure light wounds (Rev.: Cause light wounds)',
+        'Detect evil',
+        'Detect magic',
+        'Light (Rev.: Darkness)',
+        'Protection from evil',
+        'Purify food and water',
+        'Remove fear (Rev.: Cause fear)',
+        'Resist cold'
+    ],
+    [
+        'Bless (Rev.: Blight)',
+        'Find traps',
+        'Hold person',
+        'Know alignment',
+        'Resist fire',
+        'Silence',
+        'Sneak charm',
+        'Speak with animals'
+    ],
+    [
+        'Continual light (Rev.: Continual darkness)',
+        'Cure disease (Rev.: Cause disease)',
+        'Growth of animal',
+        'Locate object',
+        'Remove curse (Rev.: Curse)',
+        'Striking'
+    ],
+    [
+        'Create water',
+        'Cure serious wounds (Rev.: Cause serious wounds)',
+        'Neutralize posion',
+        'Protection from evil 10 ft',
+        'Speak with plants',
+        'Sticks to snakes'
+    ],
+    [
+        'Commune',
+        'Create food',
+        'Dispel evil',
+        'Insect plague',
+        'Quest (Rev.: Remove quest)',
+        'Raise dead (Rev.: Finger of death)'
     ]
 ];
 
@@ -825,19 +872,21 @@ const print_ac = () => {
 };
 
 var spell_book = [];
-if (chosen_class.spell_book)
-    spell_book.push(chalk.dim("Read magic (lv1)"));
-if (chosen_class.spell_book && chosen_class.spells && chosen_class.spells[level - 1].length > 0 ) {
+if (chosen_class.has_spell_book && chosen_class.spells && chosen_class.spells[level - 1].length > 0) {
     if (auto_mode) {
+        spell_book.push(chalk.dim("Read magic (lv1)"));
         const spell_counts = chosen_class.spells[level - 1];
         for (var i = 0; i < spell_counts.length; ++i) {
             const spell_level = i + 1;
             var indices_generated = [];
             for (var j = 0; j < spell_counts[i]; ++j) {
-                const index = roll(magicuser_spell_list[i].length, 1, 0) - 1
-                if (!indices_generated.includes(index)) {
-                    spell_book.push(`${magicuser_spell_list[i][index]} (lv${spell_level})`);
-                    indices_generated.push(index);
+                for ( ; ; ) {
+                    const index = roll(magicuser_spell_list[i].length, 1, 0) - 1;
+                    if (!indices_generated.includes(index)) {
+                        spell_book.push(`${magicuser_spell_list[i][index]} (lv${spell_level})`);
+                        indices_generated.push(index);
+                        break;
+                    }
                 }
             }
         }
@@ -849,6 +898,7 @@ if (chosen_class.spell_book && chosen_class.spells && chosen_class.spells[level 
             { key: "n", name: "No", value: false }
         ]
     })) {
+        spell_book.push(chalk.dim("Read magic (lv1)"));
         const spell_counts = chosen_class.spells[level - 1];
         for (var i = 0; i < spell_counts.length; ++i) {
             const spell_level = i + 1;
@@ -869,6 +919,27 @@ if (chosen_class.spell_book && chosen_class.spells && chosen_class.spells[level 
             });
             for (var s of choices)
                 spell_book.push(`${s} (lv${spell_level})`);
+        }
+    }
+}
+
+var current_cleric_spells = [];
+if (chosen_class.divine_magic && chosen_class.spells && chosen_class.spells[level - 1].length > 0) {
+    if (auto_mode) {
+        const spell_counts = chosen_class.spells[level - 1];
+        for (var i = 0; i < spell_counts.length; ++i) {
+            const spell_level = i + 1;
+            var indices_generated = [];
+            for (var j = 0; j < spell_counts[i]; ++j) {
+                for ( ; ; ) {
+                    const index = roll(cleric_spell_list[i].length, 1, 0) - 1;
+                    if (!indices_generated.includes(index)) {
+                        current_cleric_spells.push(`${cleric_spell_list[i][index]} (lv${spell_level})`);
+                        indices_generated.push(index);
+                        break;
+                    }
+                }
+            }
         }
     }
 }
@@ -959,6 +1030,8 @@ if (chosen_class.spells) {
     console.log(chalk.bold(`Spells (${chosen_class.divine_magic ? 'divine' : 'arcane'}) ${spells_msg}`));
     if (spell_book.length > 0)
         console.log(chalk.bold(`Spell book ${spell_book.join(', ')}`));
+    if (current_cleric_spells.length > 0)
+        console.log(chalk.bold(`Currently memorized ${current_cleric_spells.join(', ')}`));
 }
 const saves = saving_throws_for_level(chosen_class.saves, level);
 console.log(`${chalk.bold('Saving throws')} D ${chalk.bold(saves[0])} W ${chalk.bold(saves[1])} P ${chalk.bold(saves[2])} ` +
