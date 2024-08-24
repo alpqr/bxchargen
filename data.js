@@ -1,5 +1,5 @@
 import chalk from 'chalk'
-import { apply_map } from './funcs.js'
+import { roll, apply_map } from './funcs.js'
 
 function xp_modifier_from_single_prime_req(value) {
     return apply_map([
@@ -202,84 +202,6 @@ const classes = [
         autoequip: {
             armor: { index: 1 },
             weapons: { roll: true }
-        }
-    },
-    {
-        name: "Half-elf",
-        description: "Half-elf (prime requisite INT and STR)",
-        allowed: (str, dex, con, int, wis, cha) => cha >= 9 && con >= 9,
-        hit_dice: 6,
-        armor_allowed: true,
-        shield_allowed: true,
-        xp_mod: (str, dex, con, int, wis, cha) => {
-            if ((int >= 16 && str >= 13) || (int >= 13 && str >= 16))
-                return 10;
-            if (int >= 13 && str >= 13)
-                return 5;
-            return 0;
-        },
-        other_info: "Infravision 60, Detect secret doors 2-in-6",
-        languages: "Alignment, Common, Elvish",
-        spells: [
-            [], [1], [2], [2],
-            [2, 1], [2, 2], [2, 2], [2, 2, 1],
-            [3, 2, 1], [3, 2, 2], [3, 2, 2, 1], [3, 3, 2, 1]
-        ],
-        has_spell_book: true,
-        max_level: 12,
-        post_level_9_hd: [2, 4, 6],
-        thac0: [ { level: 3, value: 19 }, { level: 6, value: 17 }, { level: 9, value: 14 }, { level: 12, value: 12 } ],
-        base_xp: [ 0, 2500, 5000, 10_000, 20_000, 40_000, 80_000, 150_000, 300_000, 450_000, 600_000, 750_000 ],
-        saves: [ { level: 3, values: [ 12, 13, 13, 15, 15 ] }, { level: 6, values: [ 10, 11, 11, 13, 12 ] },
-                { level: 9, values: [ 8, 9, 9, 10, 10 ] }, { level: 12, values: [ 6, 7, 8, 8, 8 ] } ],
-        autoequip: {
-            armor: { roll: true },
-            weapons: { roll: true }
-        }
-    },
-    {
-        name: "Dark elf",
-        description: "Dark elf (prime requisite STR and WIS)",
-        allowed: (str, dex, con, int, wis, cha) => int >= 9,
-        hit_dice: 6,
-        armor_allowed: true,
-        shield_allowed: true,
-        xp_mod: (str, dex, con, int, wis, cha) => {
-            if (wis >= 16 && str >= 13)
-                return 10;
-            if (wis >= 13 && str >= 13)
-                return 5;
-            return 0;
-        },
-        other_info: `${chalk.bold('Light sensitivity (-2 attack -1 AC in bright light)')}, Spider affinity (+1 to reaction against spiders), Infravision 90, ` +
-                    `Listening at doors 2-in-6, Detect secret doors 2-in-6, Immune to ghoul paralysis`,
-        level_dep_info: (level) => {
-            var r = level == 1 ? [ chalk.bold("Can only memorize Light (Darkness) spell") ] : [];
-            if (level >= 3)
-                r.push("Can memorize magic-user Web (lv2) spell");
-            return r.join(", ");
-        },
-        languages: "Alignment, Common, Deepcommon, Elvish, Gnomish, Spiders",
-        divine_magic: true,
-        spells: [
-            [1], [2], [2, 1], [2, 2],
-            [2, 2, 1], [2, 2, 2, 1], [3, 3, 2, 2, 1], [3, 3, 3, 2, 2],
-            [4, 4, 3, 3, 2], [4, 4, 4, 3, 3]
-        ],
-        max_level: 10,
-        post_level_9_hd: [2],
-        thac0: [ { level: 3, value: 19 }, { level: 6, value: 17 }, { level: 9, value: 14 }, { level: 10, value: 12 } ],
-        base_xp: [ 0, 4000, 8000, 16_000, 32_000, 64_000, 120_000, 250_000, 400_000, 600_000 ],
-        saves: [ { level: 3, values: [ 12, 13, 13, 15, 12 ] }, { level: 6, values: [ 10, 11, 11, 13, 10 ] },
-                 { level: 9, values: [ 8, 9, 9, 10, 8 ] }, { level: 10, values: [ 6, 7, 8, 8, 6 ] } ],
-        autoequip: {
-            armor: { roll: true },
-            weapons: { roll: true },
-            fixed_spell_indices: (level) =>  {
-                if (level == 1)
-                    return [ 3 ]; // Light (Darkness)
-                return [];
-            }
         }
     }
 ];

@@ -254,10 +254,17 @@ for ( ; ; ) {
         if (chosen_class.autoequip.armor.index !== undefined) {
             chosen_armor = armor_list[chosen_class.autoequip.armor.index];
         } else if (chosen_class.autoequip.armor.roll) {
-            const a = auto_armor_list[roll(auto_armor_list.length, 1, 0) - 1];
-            chosen_armor = armor_list[a.index];
-            if (a.shield)
-                has_shield = true;
+            for ( ; ; ) {
+                const a = auto_armor_list[roll(auto_armor_list.length, 1, 0) - 1];
+                if (chosen_class.autoequip.armor.ignore_indices) {
+                    if (chosen_class.autoequip.armor.ignore_indices.includes(a.index))
+                        continue;
+                }
+                chosen_armor = armor_list[a.index];
+                if (a.shield)
+                    has_shield = true;
+                break;
+            }
         }
 
         if (chosen_class.autoequip.weapons.indices !== undefined) {
@@ -313,8 +320,10 @@ for ( ; ; ) {
         for (var i in armor_list) {
             var skip = i > 0;
             if (chosen_class.armor_allowed) {
-                if (i == 1 || !chosen_class.leather_armor_only)
-                    skip = false;
+                if (i == 1 || !chosen_class.leather_armor_only) {
+                    if (i != 3 || !chosen_class.no_plate_mail)
+                        skip = false;
+                }
             }
             if (skip)
                 console.log(chalk.dim(`Skipping ${armor_list[i].name} due to not meeting requirements`));
@@ -412,7 +421,10 @@ for ( ; ; ) {
     if (needs_slingstones)
         equipment.push({ name: 'Sling stones', count: 1 });
 
-    const ac_wo_shield = chosen_armor.ac - mod_ac; // descending AC, but modifier is like other mod_* hence the subtract
+    var class_ac_bonus = 0;
+    if (chosen_class.ac_bonus)
+        class_ac_bonus = chosen_class.ac_bonus(level);
+    const ac_wo_shield = chosen_armor.ac - mod_ac - class_ac_bonus; // descending AC, but modifier is like other mod_* hence the subtract
     const ac = ac_wo_shield - (has_shield ? 1 : 0);
     const print_ac = () => {
         console.log(`${header('AC')} ${chalk.bold(ac)}${ac_wo_shield != ac ? ` (${chalk.bold(ac_wo_shield)} without shield)` : ''}`);
@@ -596,9 +608,17 @@ for ( ; ; ) {
     console.log(`${header('Saving throws')} D ${chalk.bold(saves[0])} W ${chalk.bold(saves[1])} P ${chalk.bold(saves[2])} ` +
                 `B ${chalk.bold(saves[3])} S ${chalk.bold(saves[4])}`);
     const level_dep_info = chosen_class.level_dep_info ? chosen_class.level_dep_info(level) : null;
-    console.log(`${header('Details')} Open doors ${open_doors_chance(str)}-in-6` +
-                `${chosen_class.other_info ? `, ${chosen_class.other_info}` : ''}` +
-                `${level_dep_info ? `, ${level_dep_info}` : ''}`);
+    const details_text = `Open doors ${open_doors_chance(str)}-in-6` +
+                         `${chosen_class.other_info ? `, ${chosen_class.other_info}` : ''}` +
+                         `${level_dep_info ? `, ${level_dep_info}` : ''}`;
+    if (!markdown) {
+        console.log(`${header('Details')} ${details_text}`);
+    } else {
+        const entries = details_text.split(', ');
+        for (var i in entries) {
+            console.log('- ' + entries[i]);
+        }
+    }
     console.log(`${header('Alignment')} ${alignment}`);
     console.log(`${header('Languages')} ${languages.join(', ')}`);
     var equipment_arr = [];
