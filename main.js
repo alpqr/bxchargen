@@ -228,6 +228,8 @@ for ( ; ; ) {
                 max_hp += chosen_class.post_level_9_hd[level_hd - 9];
             }
         }
+        if (max_hp < 2)
+            continue;
         if (auto_mode) {
             break;
         } else {
@@ -570,7 +572,7 @@ for ( ; ; ) {
     print_abilities(true);
     print_cha_msg(cha, markdown ? "- " : "");
     console.log(`${header('XP')} ${chalk.bold(chosen_class.base_xp[level - 1])}`);
-    console.log(`${header('HP')} ${chalk.bold(max_hp)} / ${chalk.bold(max_hp)} (Hit dice 1d${chosen_class.hit_dice})`);
+    console.log(`${header('Max HP')} ${chalk.bold(max_hp)} (Hit dice 1d${chosen_class.hit_dice})`);
     console.log(`${header('Armor')} ${chosen_armor.name}${has_shield ? ', Shield' : ''}`);
     print_ac();
     var thac0 = 19;
